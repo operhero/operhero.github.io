@@ -19,9 +19,9 @@ plainwhite:
 
   # generate social links in footer
   social_links:
-    twitter: 没有
+    twitter: https://github.com/operhero
     github:  https://github.com/operhero
-    linkedIn: 没有
+    linkedIn: https://github.com/operhero
     rss: rss
     # dribbble: jekyll
     # facebook: jekyll
