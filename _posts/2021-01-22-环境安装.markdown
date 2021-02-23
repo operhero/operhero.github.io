@@ -1,7 +1,7 @@
 ---
 layout: post
-title:  "服务器环境安装"
-date:   2021-02-23 15:41:19 +0800
+title:  "环境安装"
+date:   2021-01-22 15:41:19 +0800
 categories: linux
 ---
 1、安装dotnetcore
@@ -66,3 +66,4 @@ systemctl start mariadb  # 开启服务
 systemctl enable mariadb  # 设置为开机自启动服务
 
 mysql_secure_installation
+
