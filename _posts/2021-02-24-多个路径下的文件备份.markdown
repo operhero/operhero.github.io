@@ -1,0 +1,18 @@
+---
+layout: post
+title:  "多个路径下的文件备份"
+date:   2021-02-24 11:31:19 +0800
+categories: linux
+---
+- 问题描述：
+
+日志服务器按目录记录了多台服务器的日志
+
+如2001服的日志存储在/data/log/2001/，文件名为msg.log.year-month-day-hour.log
+
+现在需要备份/data/log/*/msg.log.2021-02-20*.log,即所有服务器在2月20产生的日志，供紧急问题修复数据
+
+- 一种备份方法:
+```
+sudo find -P /data/log/* -name "msg.log.2021-02-20*"|xargs -I {} cp {} {}_bak
+```
