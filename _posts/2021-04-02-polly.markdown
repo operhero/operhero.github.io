@@ -1,0 +1,178 @@
+---
+layout: post
+title:  "Polly"
+date:   2021-04-02 14:37:19 +0800
+categories: eShop
+---
+提供重试、断路、超时、故障恢复等策略方法库
+
+## 重试策略（Retry）
+重试策略针对的前置条件是短暂的故障延迟且在短暂的延迟之后能够自我纠正
+```csharp
+static int Compute()
+{
+    var a = 0;
+    return 1 / a;
+}
+
+static void Main(string[] args)
+{
+    var retryTwoTimesPolicy =
+        Policy
+            .Handle<DivideByZeroException>()
+            .Retry(3, (ex, count) =>
+            {
+                Console.WriteLine("执行失败! 重试次数 {0}", count);
+                Console.WriteLine("异常来自 {0}", ex.GetType().Name);
+            });
+    retryTwoTimesPolicy.Execute(() =>
+    {
+        Compute();
+    });
+}
+```
+
+控制台输出：
+```
+执行失败! 重试次数 1
+异常来自 DivideByZeroException
+执行失败! 重试次数 2
+异常来自 DivideByZeroException
+执行失败! 重试次数 3
+异常来自 DivideByZeroException
+Unhandled exception. System.DivideByZeroException: Attempted to divide by zero.
+   at Test2.Program.Compute() in D:\Test2\Test2\Program.cs:line 144
+   at Test2.Program.<>c.<Main>b__2_1() in D:\Test2\Test2\Program.cs:line 159
+   at Polly.Policy.<>c__DisplayClass108_0.<Execute>b__0(Context ctx, CancellationToken ct)
+   at Polly.Policy.<>c__DisplayClass138_0.<Implementation>b__0(Context ctx, CancellationToken token)
+   at Polly.Retry.RetryEngine.Implementation[TResult](Func`3 action, Context context, CancellationToken cancellationToken, ExceptionPredicates shouldRetryExceptionPredicates, ResultPredicates`1 shouldRetryResultPredicates, Action`4 onRetry, Int32 permittedRetryCount, IEnumerable`1 sleepDurationsEnumerable, Func`4 sleepDurationProvider)
+   at Polly.Retry.RetryPolicy.Implementation[TResult](Func`3 action, Context context, CancellationToken cancellationToken)
+   at Polly.Policy.Implementation(Action`2 action, Context context, CancellationToken cancellationToken)
+   at Polly.Policy.Execute(Action`2 action, Context context, CancellationToken cancellationToken)
+   at Polly.Policy.Execute(Action action)
+   at Test2.Program.Main(String[] args) in D:\Test2\Test2\Program.cs:line 157
+```
+重试三次之后，最终会抛出异常
+
+当然，可指定每次重试之间等待的时间间隔
+```csharp
+static int Compute()
+{
+    var a = 0;
+    return 1 / a;
+}
+
+static void ReportaError(Exception e, TimeSpan tiempo, int intento, Context contexto)
+{
+    Console.WriteLine($"异常: {intento:00} (调用秒数: {tiempo.Seconds} 秒)\t执行时间: {DateTime.Now}");
+}
+
+static void Main(string[] args)
+{
+    var politicaWaitAndRetry = Policy
+        .Handle<DivideByZeroException>()
+        .WaitAndRetry(new[]
+        {
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(3),
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(7)
+        }, ReportaError);
+    politicaWaitAndRetry.Execute(() => { Compute(); });
+}
+```
+
+## 回退策略（Fallback）
+回退策略意在定义失败时返回的结果
+```csharp
+static int Compute()
+{
+    var a = 0;
+    return 1 / a;
+}
+
+static void Main(string[] args)
+{
+    var fallBackPolicy =
+        Policy<int>
+            .Handle<DivideByZeroException>()
+            .Fallback<int>(-1);
+    var res = fallBackPolicy.Execute(Compute);
+    Console.WriteLine($"result is {res}");
+}
+```
+控制台输出
+```
+result is -1
+```
+
+## 包装策略（PolicyWrap）
+包装策略针对的前置条件是不同的故障需要不同的策略
+
+```csharp
+static string ThrowException()
+{
+    throw new Exception();
+}
+
+static void Main(string[] args)
+{
+    var fallBackPolicy =
+        Policy<string>
+            .Handle<Exception>()
+            .Fallback("执行失败，返回Fallback");
+
+    var fallBack = fallBackPolicy.Execute(() => { return ThrowException(); });
+    Console.WriteLine(fallBack);
+
+    var politicaWaitAndRetry =
+        Policy<string>
+            .Handle<Exception>()
+            .Retry(3, (ex, count) =>
+            {
+                Console.WriteLine("执行失败! 重试次数 {0}", count);
+                Console.WriteLine("异常来自 {0}", ex.GetType().Name);
+            });
+
+    var mixedPolicy = Policy.Wrap(fallBackPolicy, politicaWaitAndRetry);
+    var mixedResult = mixedPolicy.Execute(ThrowException);
+    Console.WriteLine($"执行结果: {mixedResult}");
+}
+```
+
+## 异常
+### - 捕获多个异常
+当有多个异常类型时，通过OR声明
+```csharp
+Policy
+  .Handle<DivideByZeroException>()
+  .Or<ArgumentException>()
+```
+### - 策略条件
+除了异常，Polly还支持对结果进行性条件定义
+```csharp
+static int Compute()
+{
+    return 0;
+}
+
+static void Main(string[] args)
+{
+    var policy =
+        Policy<int>
+            .HandleResult(r=>r==0)
+            .OrResult(r=>r==1)
+            .Retry(1, (ex, count) =>
+            {
+                Console.WriteLine($"重试: {count}");
+            });
+    var r = policy.Execute(Compute);
+    Console.WriteLine($"result: {r}");
+}
+```
+控制台输出
+```
+重试: 1
+result: 0
+```
+当结果为0或者1时，尝试重试
