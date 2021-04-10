@@ -1,0 +1,115 @@
+---
+layout: post
+title:  "EF Core"
+date:   2021-04-10 14:56:19 +0800
+categories: eShop
+---
+visual studio 2019 新建 .Net Core 3.1 Console工程
+
+添加程序包：
+```
+Microsoft.EntityFrameworkCore.Tools version:3.1.14
+Microsoft.EntityFrameworkCore.Design version:3.1.14
+Pomelo.EntityFrameworkCore.MySql version:3.2.4
+```
+
+新建数据库：
+```sql
+-- 创建角色&菜单简单逻辑表
+create database RoleMenu;
+grant all on *.* to 'root'@'localhost' identified by 'root';
+
+use RoleMenu;
+-- drop table Role_Menu,Role,Menu;
+-- 创建角色表
+create table Role(
+RoleID int not null  auto_increment,
+Name nvarchar(50) not null,
+SortValue int not null,
+primary key(RoleID)
+);
+
+-- 创建菜单表 
+create table Menu(
+MenuID int not null auto_increment,
+Name nvarchar(50) not null,
+Title nvarchar(100) not null,
+LinkUrl varchar(200) null,
+Icon varchar(100) null,
+primary key(MenuID)
+);
+
+-- 创建角色-菜单表 
+create table Role_Menu(
+ID int not null auto_increment,
+RoleID int not null,
+MenuID int not null,
+primary key(ID),
+foreign key(RoleID) references Role(RoleID)
+on delete cascade,
+foreign key(MenuID) references Menu(MenuID)
+on delete no action
+);
+
+-- 添加测试数据 
+insert Role(Name,SortValue) values('系统管理员',1);
+insert Role(Name,SortValue) values('服务中心',2);
+
+-- 添加菜单数据 
+insert Menu(Name,Title) values('个人信息','个人信息管理');
+insert Menu(Name,Title) values('修改密码','修改登录密码&二级密码');
+
+-- 添加关联 
+insert Role_Menu(RoleID,MenuID) values(1,1);
+insert Role_Menu(RoleID,MenuID) values(1,2);
+insert Role_Menu(RoleID,MenuID) values(2,1);
+insert Role_Menu(RoleID,MenuID) values(2,2);
+```
+
+PM终端中输入指令：
+```
+Scaffold-DbContext "Server=127.0.0.1;port=3306;Database=RoleMenu;uid=root;pwd=root;Character Set=utf8;" Pomelo.EntityFrameworkCore.MySql -OutputDir Models
+```
+
+在Models目录中生成了映射类：
+
+Menu Role RoleMenu RoleMenuContext
+
+增删查改
+```csharp
+using System;
+using EF.Models;
+
+namespace EF
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            using (var db = new RoleMenuContext())
+            {
+                // Create
+                var role = new Role();
+                role.Name = "游客";
+                role.SortValue = 3;
+                db.Add(role);
+                db.SaveChanges();
+
+                // Read
+                foreach (var r in db.Role)
+                {
+                    Console.WriteLine(r.Name);
+                }
+
+                // Update
+                role.Name = "临时游客";
+                db.SaveChanges();
+
+                // Delete
+                db.Remove(role);
+                db.SaveChanges();
+            }
+        }
+    }
+}
+```
