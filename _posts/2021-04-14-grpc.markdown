@@ -5,14 +5,14 @@ date:   2021-04-14 15:02:19 +0800
 categories: eShop
 ---
 
-项目添加引用
+**项目添加引用**
 ```
 Install-Package Grpc
 Install-Package Google.Protobuf
 Install-Package Grpc.Tools
 ```
 
-定义helloworld.proto
+**定义helloworld.proto**
 ```
 syntax = "proto3";
 package gRPCDemo;
@@ -29,7 +29,7 @@ message HelloReply {
 }
 ```
 
-生成Helloworld.cs及HelloworldGrpc.cs类
+**生成Helloworld.cs及HelloworldGrpc.cs类**
 ```
  C:\Users\用户\.nuget\packages\grpc.tools\2.37.0\tools\windows_x64\protoc --csharp_out .  helloworld.proto --grpc_out . --plugin=protoc-gen-grpc=C:\Users\用户\.nuget\packages\grpc.tools\2.37.0\tools\windows_x64\grpc_csharp_plugin.exe
 ```
@@ -42,7 +42,8 @@ packages\Grpc.Tools.1.0.0\tools\windows_x86\protoc.exe -IgRPCDemo --csharp_out g
 需要使用visual studio，在PM命令行中使用。我的使用Rider，未找到PM命令行，所以使用绝对路径执行
 
 
-工程demo
+**工程demo**
+
 ```csharp
 class gRPCImpl : gRPC.gRPCBase
 {
