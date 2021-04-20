@@ -1,8 +1,11 @@
 ---
-layout: post
-title:  "Rabbit MQ"
-date:   2021-04-12 16:27:19 +0800
-categories: eShop
+layout:     post
+title:      "Rabbit MQ"
+subtitle:   "" 
+date:   2021-04-12
+author: "戚骏"
+tags:
+    - eShop
 ---
 
 # Windows环境安装

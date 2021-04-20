@@ -10,7 +10,7 @@
     <meta name="keywords"  content="戚骏，个人博客， 游戏程序员">
     <meta name="theme-color" content="#000000">
     
-    <title>ProtoBuf - 服务器 | 游戏| 戚骏</title>
+    <title>EF Core - 服务器 | 游戏| 戚骏</title>
 
     <!-- Web App Manifest -->
     <link rel="manifest" href="/pwa/manifest.json">
@@ -19,7 +19,7 @@
     <link rel="shortcut icon" href="/img/favicon.ico">
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://operhero.github.io/eshop/2021/04/14/protobuf/">
+    <link rel="canonical" href="https://operhero.github.io/2021/04/10/ef/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -183,13 +183,15 @@
                 <div class="post-heading">
                     <div class="tags">
                         
+                        <a class="tag" href="/tags/#eShop" title="eShop">eShop</a>
+                        
                     </div>
-                    <h1>ProtoBuf</h1>
+                    <h1>EF Core</h1>
                     
                     
                     <h2 class="subheading"></h2>
                     
-                    <span class="meta">Posted by Focus Pixel on April 14, 2021</span>
+                    <span class="meta">Posted by 戚骏 on April 10, 2021</span>
                 </div>
             </div>
         </div>
@@ -207,65 +209,109 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-				<h1 id="安装">安装</h1>
-<p><a href="https://github.com/protocolbuffers/protobuf/releases">github</a>下载protoc-3.15.8-win64.zip</p>
+				<p>visual studio 2019 新建 .Net Core 3.1 Console工程</p>
 
-<p>解压后，将/protoc-3.15.8-win64/bin所在目录添加到环境变量</p>
-
-<h1 id="demo">Demo</h1>
-
-<ul>
-  <li>新建一个myproto.proto文件，内容如下：</li>
-</ul>
-
-<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>syntax = "proto3";
-package my;
-
-message pb_team_info {
-    string team_id = 1;
-    string leader_id = 2;
-    repeated string members = 3;
-    int32 status = 4;
-}
+<p>添加程序包：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Microsoft.EntityFrameworkCore.Tools version:3.1.14
+Microsoft.EntityFrameworkCore.Design version:3.1.14
+Pomelo.EntityFrameworkCore.MySql version:3.2.4
 </code></pre></div></div>
 
-<p>syntax = “proto3”; 表示使用版本V3，不再支持required、optional等关键字，所有字段都有默认值
-package my; 定义类的命名空间</p>
+<p>新建数据库：</p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- 创建角色&amp;菜单简单逻辑表</span>
+<span class="k">create</span> <span class="k">database</span> <span class="n">RoleMenu</span><span class="p">;</span>
+<span class="k">grant</span> <span class="k">all</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="s1">'root'</span><span class="o">@</span><span class="s1">'localhost'</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">'root'</span><span class="p">;</span>
 
-<ul>
-  <li>命令行输入</li>
-</ul>
+<span class="n">use</span> <span class="n">RoleMenu</span><span class="p">;</span>
+<span class="c1">-- drop table Role_Menu,Role,Menu;</span>
+<span class="c1">-- 创建角色表</span>
+<span class="k">create</span> <span class="k">table</span> <span class="k">Role</span><span class="p">(</span>
+<span class="n">RoleID</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span>  <span class="n">auto_increment</span><span class="p">,</span>
+<span class="n">Name</span> <span class="n">nvarchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+<span class="n">SortValue</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+<span class="k">primary</span> <span class="k">key</span><span class="p">(</span><span class="n">RoleID</span><span class="p">)</span>
+<span class="p">);</span>
 
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>protoc .\myproto.proto --csharp_out=.
+<span class="c1">-- 创建菜单表 </span>
+<span class="k">create</span> <span class="k">table</span> <span class="n">Menu</span><span class="p">(</span>
+<span class="n">MenuID</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span> <span class="n">auto_increment</span><span class="p">,</span>
+<span class="n">Name</span> <span class="n">nvarchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+<span class="n">Title</span> <span class="n">nvarchar</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+<span class="n">LinkUrl</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span> <span class="k">null</span><span class="p">,</span>
+<span class="n">Icon</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span> <span class="k">null</span><span class="p">,</span>
+<span class="k">primary</span> <span class="k">key</span><span class="p">(</span><span class="n">MenuID</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="c1">-- 创建角色-菜单表 </span>
+<span class="k">create</span> <span class="k">table</span> <span class="n">Role_Menu</span><span class="p">(</span>
+<span class="n">ID</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span> <span class="n">auto_increment</span><span class="p">,</span>
+<span class="n">RoleID</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+<span class="n">MenuID</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+<span class="k">primary</span> <span class="k">key</span><span class="p">(</span><span class="n">ID</span><span class="p">),</span>
+<span class="k">foreign</span> <span class="k">key</span><span class="p">(</span><span class="n">RoleID</span><span class="p">)</span> <span class="k">references</span> <span class="k">Role</span><span class="p">(</span><span class="n">RoleID</span><span class="p">)</span>
+<span class="k">on</span> <span class="k">delete</span> <span class="k">cascade</span><span class="p">,</span>
+<span class="k">foreign</span> <span class="k">key</span><span class="p">(</span><span class="n">MenuID</span><span class="p">)</span> <span class="k">references</span> <span class="n">Menu</span><span class="p">(</span><span class="n">MenuID</span><span class="p">)</span>
+<span class="k">on</span> <span class="k">delete</span> <span class="k">no</span> <span class="n">action</span>
+<span class="p">);</span>
+
+<span class="c1">-- 添加测试数据 </span>
+<span class="k">insert</span> <span class="k">Role</span><span class="p">(</span><span class="n">Name</span><span class="p">,</span><span class="n">SortValue</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="s1">'系统管理员'</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">insert</span> <span class="k">Role</span><span class="p">(</span><span class="n">Name</span><span class="p">,</span><span class="n">SortValue</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="s1">'服务中心'</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span>
+
+<span class="c1">-- 添加菜单数据 </span>
+<span class="k">insert</span> <span class="n">Menu</span><span class="p">(</span><span class="n">Name</span><span class="p">,</span><span class="n">Title</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="s1">'个人信息'</span><span class="p">,</span><span class="s1">'个人信息管理'</span><span class="p">);</span>
+<span class="k">insert</span> <span class="n">Menu</span><span class="p">(</span><span class="n">Name</span><span class="p">,</span><span class="n">Title</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="s1">'修改密码'</span><span class="p">,</span><span class="s1">'修改登录密码&amp;二级密码'</span><span class="p">);</span>
+
+<span class="c1">-- 添加关联 </span>
+<span class="k">insert</span> <span class="n">Role_Menu</span><span class="p">(</span><span class="n">RoleID</span><span class="p">,</span><span class="n">MenuID</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">insert</span> <span class="n">Role_Menu</span><span class="p">(</span><span class="n">RoleID</span><span class="p">,</span><span class="n">MenuID</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span>
+<span class="k">insert</span> <span class="n">Role_Menu</span><span class="p">(</span><span class="n">RoleID</span><span class="p">,</span><span class="n">MenuID</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">insert</span> <span class="n">Role_Menu</span><span class="p">(</span><span class="n">RoleID</span><span class="p">,</span><span class="n">MenuID</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span>
 </code></pre></div></div>
-<p>生成Myproto.cs</p>
 
-<ul>
-  <li>项目添加Myproto.cs，测试</li>
-</ul>
-
-<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pb_team_info</span> <span class="n">teamInfo</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">pb_team_info</span><span class="p">();</span>
-<span class="n">teamInfo</span><span class="p">.</span><span class="n">LeaderId</span> <span class="p">=</span> <span class="s">"2222"</span><span class="p">;</span>
-<span class="n">teamInfo</span><span class="p">.</span><span class="n">Members</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"aaa"</span><span class="p">);</span>
-<span class="n">teamInfo</span><span class="p">.</span><span class="n">Members</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"bbb"</span><span class="p">);</span>
-<span class="n">teamInfo</span><span class="p">.</span><span class="n">Status</span> <span class="p">=</span> <span class="m">1</span><span class="p">;</span>
-<span class="n">teamInfo</span><span class="p">.</span><span class="n">TeamId</span> <span class="p">=</span> <span class="s">"myteam"</span><span class="p">;</span>
-
-<span class="kt">var</span> <span class="n">datas</span> <span class="p">=</span> <span class="n">teamInfo</span><span class="p">.</span><span class="nf">ToByteArray</span><span class="p">();</span>
-<span class="kt">var</span> <span class="n">str</span> <span class="p">=</span> <span class="n">teamInfo</span><span class="p">.</span><span class="nf">ToString</span><span class="p">();</span>
-
-<span class="n">pb_team_info</span> <span class="n">tb</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">pb_team_info</span><span class="p">();</span>
-<span class="n">tb</span><span class="p">.</span><span class="nf">MergeFrom</span><span class="p">(</span><span class="n">datas</span><span class="p">);</span>
-
-<span class="kt">var</span> <span class="n">jp</span> <span class="p">=</span> <span class="n">JsonConvert</span><span class="p">.</span><span class="n">DeserializeObject</span><span class="p">&lt;</span><span class="n">pb_team_info</span><span class="p">&gt;(</span><span class="n">str</span><span class="p">);</span>
+<p>PM终端中输入指令：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Scaffold-DbContext "Server=127.0.0.1;port=3306;Database=RoleMenu;uid=root;pwd=root;Character Set=utf8;" Pomelo.EntityFrameworkCore.MySql -OutputDir Models
 </code></pre></div></div>
 
-<p>ToByteArray方法生成字节数据，可用于构造出新的对象
-ToString方法会将对象json化成字符串</p>
+<p>在Models目录中生成了映射类：</p>
 
-<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="k">global</span><span class="p">::</span><span class="n">System</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">DebuggerNonUserCodeAttribute</span><span class="p">]</span>
-<span class="k">public</span> <span class="k">override</span> <span class="kt">string</span> <span class="nf">ToString</span><span class="p">()</span> <span class="p">{</span>
-  <span class="k">return</span> <span class="n">pb</span><span class="p">::</span><span class="n">JsonFormatter</span><span class="p">.</span><span class="nf">ToDiagnosticString</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+<p>Menu Role RoleMenu RoleMenuContext</p>
+
+<p>增删查改</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">EF.Models</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="nn">EF</span>
+<span class="p">{</span>
+    <span class="k">class</span> <span class="nc">Program</span>
+    <span class="p">{</span>
+        <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">using</span> <span class="p">(</span><span class="kt">var</span> <span class="n">db</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">RoleMenuContext</span><span class="p">())</span>
+            <span class="p">{</span>
+                <span class="c1">// Create</span>
+                <span class="kt">var</span> <span class="n">role</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Role</span><span class="p">();</span>
+                <span class="n">role</span><span class="p">.</span><span class="n">Name</span> <span class="p">=</span> <span class="s">"游客"</span><span class="p">;</span>
+                <span class="n">role</span><span class="p">.</span><span class="n">SortValue</span> <span class="p">=</span> <span class="m">3</span><span class="p">;</span>
+                <span class="n">db</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">role</span><span class="p">);</span>
+                <span class="n">db</span><span class="p">.</span><span class="nf">SaveChanges</span><span class="p">();</span>
+
+                <span class="c1">// Read</span>
+                <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">r</span> <span class="k">in</span> <span class="n">db</span><span class="p">.</span><span class="n">Role</span><span class="p">)</span>
+                <span class="p">{</span>
+                    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">Name</span><span class="p">);</span>
+                <span class="p">}</span>
+
+                <span class="c1">// Update</span>
+                <span class="n">role</span><span class="p">.</span><span class="n">Name</span> <span class="p">=</span> <span class="s">"临时游客"</span><span class="p">;</span>
+                <span class="n">db</span><span class="p">.</span><span class="nf">SaveChanges</span><span class="p">();</span>
+
+                <span class="c1">// Delete</span>
+                <span class="n">db</span><span class="p">.</span><span class="nf">Remove</span><span class="p">(</span><span class="n">role</span><span class="p">);</span>
+                <span class="n">db</span><span class="p">.</span><span class="nf">SaveChanges</span><span class="p">();</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div></div>
 
@@ -278,17 +324,17 @@ ToString方法会将对象json化成字符串</p>
                 <ul class="pager">
                     
                     <li class="previous">
-                        <a href="/eshop/2021/04/12/rabbitMq/" data-toggle="tooltip" data-placement="top" title="Rabbit MQ">
+                        <a href="/2021/04/02/oauth2/" data-toggle="tooltip" data-placement="top" title="OAuth2">
                         Previous<br>
-                        <span>Rabbit MQ</span>
+                        <span>OAuth2</span>
                         </a>
                     </li>
                     
                     
                     <li class="next">
-                        <a href="/eshop/2021/04/14/grpc/" data-toggle="tooltip" data-placement="top" title="GRPC">
+                        <a href="/2021/04/12/rabbitMq/" data-toggle="tooltip" data-placement="top" title="Rabbit MQ">
                         Next<br>
-                        <span>GRPC</span>
+                        <span>Rabbit MQ</span>
                         </a>
                     </li>
                     
@@ -324,6 +370,16 @@ ToString方法会将对象json化成字符串</p>
                     <div class="tags">
         				
                             
+                				<a href="/tags/#linux" title="linux" rel="3">
+                                    linux
+                                </a>
+                            
+        				
+                            
+                				<a href="/tags/#eShop" title="eShop" rel="6">
+                                    eShop
+                                </a>
+                            
         				
         			</div>
                 </section>
@@ -353,8 +409,8 @@ ToString方法会将对象json化成字符串</p>
 <script type="text/javascript">
     /* * * CONFIGURATION VARIABLES * * */
     var disqus_shortname = "xiaoy-github-io";
-    var disqus_identifier = "/eshop/2021/04/14/protobuf";
-    var disqus_url = "https://operhero.github.io/eshop/2021/04/14/protobuf/";
+    var disqus_identifier = "/2021/04/10/ef";
+    var disqus_url = "https://operhero.github.io/2021/04/10/ef/";
 
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;

@@ -10,7 +10,7 @@
     <meta name="keywords"  content="戚骏，个人博客， 游戏程序员">
     <meta name="theme-color" content="#000000">
     
-    <title>EF Core - 服务器 | 游戏| 戚骏</title>
+    <title>记一次磁盘分区与挂载 - 服务器 | 游戏| 戚骏</title>
 
     <!-- Web App Manifest -->
     <link rel="manifest" href="/pwa/manifest.json">
@@ -19,7 +19,7 @@
     <link rel="shortcut icon" href="/img/favicon.ico">
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://operhero.github.io/eshop/2021/04/10/ef/">
+    <link rel="canonical" href="https://operhero.github.io/2021/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA%E4%B8%8E%E6%8C%82%E8%BD%BD/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -183,13 +183,15 @@
                 <div class="post-heading">
                     <div class="tags">
                         
+                        <a class="tag" href="/tags/#linux" title="linux">linux</a>
+                        
                     </div>
-                    <h1>EF Core</h1>
+                    <h1>记一次磁盘分区与挂载</h1>
                     
                     
                     <h2 class="subheading"></h2>
                     
-                    <span class="meta">Posted by Focus Pixel on April 10, 2021</span>
+                    <span class="meta">Posted by 戚骏 on January 22, 2021</span>
                 </div>
             </div>
         </div>
@@ -207,110 +209,50 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-				<p>visual studio 2019 新建 .Net Core 3.1 Console工程</p>
+				<ul>
+  <li><strong>查看磁盘分区情况：</strong></li>
+</ul>
 
-<p>添加程序包：</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Microsoft.EntityFrameworkCore.Tools version:3.1.14
-Microsoft.EntityFrameworkCore.Design version:3.1.14
-Pomelo.EntityFrameworkCore.MySql version:3.2.4
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	fdisk <span class="nt">-l</span> 或 fdisk <span class="nt">-f</span>
 </code></pre></div></div>
 
-<p>新建数据库：</p>
-<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- 创建角色&amp;菜单简单逻辑表</span>
-<span class="k">create</span> <span class="k">database</span> <span class="n">RoleMenu</span><span class="p">;</span>
-<span class="k">grant</span> <span class="k">all</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="s1">'root'</span><span class="o">@</span><span class="s1">'localhost'</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">'root'</span><span class="p">;</span>
+<ul>
+  <li><strong>查看文件系统信息：</strong></li>
+</ul>
 
-<span class="n">use</span> <span class="n">RoleMenu</span><span class="p">;</span>
-<span class="c1">-- drop table Role_Menu,Role,Menu;</span>
-<span class="c1">-- 创建角色表</span>
-<span class="k">create</span> <span class="k">table</span> <span class="k">Role</span><span class="p">(</span>
-<span class="n">RoleID</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span>  <span class="n">auto_increment</span><span class="p">,</span>
-<span class="n">Name</span> <span class="n">nvarchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
-<span class="n">SortValue</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
-<span class="k">primary</span> <span class="k">key</span><span class="p">(</span><span class="n">RoleID</span><span class="p">)</span>
-<span class="p">);</span>
-
-<span class="c1">-- 创建菜单表 </span>
-<span class="k">create</span> <span class="k">table</span> <span class="n">Menu</span><span class="p">(</span>
-<span class="n">MenuID</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span> <span class="n">auto_increment</span><span class="p">,</span>
-<span class="n">Name</span> <span class="n">nvarchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
-<span class="n">Title</span> <span class="n">nvarchar</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
-<span class="n">LinkUrl</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span> <span class="k">null</span><span class="p">,</span>
-<span class="n">Icon</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span> <span class="k">null</span><span class="p">,</span>
-<span class="k">primary</span> <span class="k">key</span><span class="p">(</span><span class="n">MenuID</span><span class="p">)</span>
-<span class="p">);</span>
-
-<span class="c1">-- 创建角色-菜单表 </span>
-<span class="k">create</span> <span class="k">table</span> <span class="n">Role_Menu</span><span class="p">(</span>
-<span class="n">ID</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span> <span class="n">auto_increment</span><span class="p">,</span>
-<span class="n">RoleID</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
-<span class="n">MenuID</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
-<span class="k">primary</span> <span class="k">key</span><span class="p">(</span><span class="n">ID</span><span class="p">),</span>
-<span class="k">foreign</span> <span class="k">key</span><span class="p">(</span><span class="n">RoleID</span><span class="p">)</span> <span class="k">references</span> <span class="k">Role</span><span class="p">(</span><span class="n">RoleID</span><span class="p">)</span>
-<span class="k">on</span> <span class="k">delete</span> <span class="k">cascade</span><span class="p">,</span>
-<span class="k">foreign</span> <span class="k">key</span><span class="p">(</span><span class="n">MenuID</span><span class="p">)</span> <span class="k">references</span> <span class="n">Menu</span><span class="p">(</span><span class="n">MenuID</span><span class="p">)</span>
-<span class="k">on</span> <span class="k">delete</span> <span class="k">no</span> <span class="n">action</span>
-<span class="p">);</span>
-
-<span class="c1">-- 添加测试数据 </span>
-<span class="k">insert</span> <span class="k">Role</span><span class="p">(</span><span class="n">Name</span><span class="p">,</span><span class="n">SortValue</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="s1">'系统管理员'</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
-<span class="k">insert</span> <span class="k">Role</span><span class="p">(</span><span class="n">Name</span><span class="p">,</span><span class="n">SortValue</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="s1">'服务中心'</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span>
-
-<span class="c1">-- 添加菜单数据 </span>
-<span class="k">insert</span> <span class="n">Menu</span><span class="p">(</span><span class="n">Name</span><span class="p">,</span><span class="n">Title</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="s1">'个人信息'</span><span class="p">,</span><span class="s1">'个人信息管理'</span><span class="p">);</span>
-<span class="k">insert</span> <span class="n">Menu</span><span class="p">(</span><span class="n">Name</span><span class="p">,</span><span class="n">Title</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="s1">'修改密码'</span><span class="p">,</span><span class="s1">'修改登录密码&amp;二级密码'</span><span class="p">);</span>
-
-<span class="c1">-- 添加关联 </span>
-<span class="k">insert</span> <span class="n">Role_Menu</span><span class="p">(</span><span class="n">RoleID</span><span class="p">,</span><span class="n">MenuID</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
-<span class="k">insert</span> <span class="n">Role_Menu</span><span class="p">(</span><span class="n">RoleID</span><span class="p">,</span><span class="n">MenuID</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span>
-<span class="k">insert</span> <span class="n">Role_Menu</span><span class="p">(</span><span class="n">RoleID</span><span class="p">,</span><span class="n">MenuID</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
-<span class="k">insert</span> <span class="n">Role_Menu</span><span class="p">(</span><span class="n">RoleID</span><span class="p">,</span><span class="n">MenuID</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="nb">df</span> <span class="nt">-h</span>
 </code></pre></div></div>
 
-<p>PM终端中输入指令：</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Scaffold-DbContext "Server=127.0.0.1;port=3306;Database=RoleMenu;uid=root;pwd=root;Character Set=utf8;" Pomelo.EntityFrameworkCore.MySql -OutputDir Models
-</code></pre></div></div>
+<ul>
+  <li>
+    <p><strong>准备知识一：</strong>主分区、逻辑分区与扩展分区的区别</p>
 
-<p>在Models目录中生成了映射类：</p>
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  主分区相当于c盘，扩展分区看不到，是逻辑分区的总和。
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p><strong>准备知识二：</strong>Linux标准的文件系统 Ext2/Ext3/Ext4/xfs</p>
+  </li>
+  <li>
+    <p><strong>目标：</strong> 我们只创建一个主分区，初始化格式为xfs，挂载到/data</p>
+  </li>
+  <li>
+    <p><strong>操作：</strong></p>
+  </li>
+</ul>
 
-<p>Menu Role RoleMenu RoleMenuContext</p>
-
-<p>增删查改</p>
-<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
-<span class="k">using</span> <span class="nn">EF.Models</span><span class="p">;</span>
-
-<span class="k">namespace</span> <span class="nn">EF</span>
-<span class="p">{</span>
-    <span class="k">class</span> <span class="nc">Program</span>
-    <span class="p">{</span>
-        <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
-        <span class="p">{</span>
-            <span class="k">using</span> <span class="p">(</span><span class="kt">var</span> <span class="n">db</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">RoleMenuContext</span><span class="p">())</span>
-            <span class="p">{</span>
-                <span class="c1">// Create</span>
-                <span class="kt">var</span> <span class="n">role</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Role</span><span class="p">();</span>
-                <span class="n">role</span><span class="p">.</span><span class="n">Name</span> <span class="p">=</span> <span class="s">"游客"</span><span class="p">;</span>
-                <span class="n">role</span><span class="p">.</span><span class="n">SortValue</span> <span class="p">=</span> <span class="m">3</span><span class="p">;</span>
-                <span class="n">db</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">role</span><span class="p">);</span>
-                <span class="n">db</span><span class="p">.</span><span class="nf">SaveChanges</span><span class="p">();</span>
-
-                <span class="c1">// Read</span>
-                <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">r</span> <span class="k">in</span> <span class="n">db</span><span class="p">.</span><span class="n">Role</span><span class="p">)</span>
-                <span class="p">{</span>
-                    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">Name</span><span class="p">);</span>
-                <span class="p">}</span>
-
-                <span class="c1">// Update</span>
-                <span class="n">role</span><span class="p">.</span><span class="n">Name</span> <span class="p">=</span> <span class="s">"临时游客"</span><span class="p">;</span>
-                <span class="n">db</span><span class="p">.</span><span class="nf">SaveChanges</span><span class="p">();</span>
-
-                <span class="c1">// Delete</span>
-                <span class="n">db</span><span class="p">.</span><span class="nf">Remove</span><span class="p">(</span><span class="n">role</span><span class="p">);</span>
-                <span class="n">db</span><span class="p">.</span><span class="nf">SaveChanges</span><span class="p">();</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1  fdisk <span class="nt">-l</span> <span class="c">#查看到未分区的磁盘 /dev/vdb</span>
+2  fdisk /dev/vdb 进入分区命令行
+3  输入n
+4  输入p <span class="c">#p-主分区；e-扩展区；l-逻辑区</span>
+5  1~4之间，输入1
+6  回合 <span class="c">#选择默认分区起始的柱面</span>
+7  +200G <span class="c">#分区大小，+size{K,M,G}</span>
+8  p <span class="c">#查看分区</span>
+9  w <span class="c">#保存退出</span>
+10 mkfs.xfs <span class="nt">-f</span> /dev/vdb/
+11 <span class="nb">echo echo</span> <span class="s2">"/dev/vdb1            /data                xfs        defaults              1 2"</span> <span class="o">&gt;&gt;</span> /etc/fstab
+12 mount <span class="nt">-a</span>
 </code></pre></div></div>
 
 
@@ -322,17 +264,17 @@ Pomelo.EntityFrameworkCore.MySql version:3.2.4
                 <ul class="pager">
                     
                     <li class="previous">
-                        <a href="/eshop/2021/04/06/oauth2/" data-toggle="tooltip" data-placement="top" title="OAuth2">
+                        <a href="/2021/01/22/%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85/" data-toggle="tooltip" data-placement="top" title="环境安装">
                         Previous<br>
-                        <span>OAuth2</span>
+                        <span>环境安装</span>
                         </a>
                     </li>
                     
                     
                     <li class="next">
-                        <a href="/eshop/2021/04/12/rabbitMq/" data-toggle="tooltip" data-placement="top" title="Rabbit MQ">
+                        <a href="/2021/02/24/%E5%A4%9A%E4%B8%AA%E8%B7%AF%E5%BE%84%E4%B8%8B%E7%9A%84%E6%96%87%E4%BB%B6%E5%A4%87%E4%BB%BD/" data-toggle="tooltip" data-placement="top" title="多个路径下的文件备份">
                         Next<br>
-                        <span>Rabbit MQ</span>
+                        <span>多个路径下的文件备份</span>
                         </a>
                     </li>
                     
@@ -368,6 +310,16 @@ Pomelo.EntityFrameworkCore.MySql version:3.2.4
                     <div class="tags">
         				
                             
+                				<a href="/tags/#linux" title="linux" rel="3">
+                                    linux
+                                </a>
+                            
+        				
+                            
+                				<a href="/tags/#eShop" title="eShop" rel="6">
+                                    eShop
+                                </a>
+                            
         				
         			</div>
                 </section>
@@ -397,8 +349,8 @@ Pomelo.EntityFrameworkCore.MySql version:3.2.4
 <script type="text/javascript">
     /* * * CONFIGURATION VARIABLES * * */
     var disqus_shortname = "xiaoy-github-io";
-    var disqus_identifier = "/eshop/2021/04/10/ef";
-    var disqus_url = "https://operhero.github.io/eshop/2021/04/10/ef/";
+    var disqus_identifier = "/2021/01/22/记一次磁盘分区与挂载";
+    var disqus_url = "https://operhero.github.io/2021/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA%E4%B8%8E%E6%8C%82%E8%BD%BD/";
 
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;

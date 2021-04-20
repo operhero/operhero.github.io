@@ -1,8 +1,11 @@
 ---
-layout: post
-title:  "OAuth2"
-date:   2021-04-06 17:30:19 +0800
-categories: eShop
+layout:     post
+title:      "OAuth2"
+subtitle:   "" 
+date:   2021-04-02
+author: "戚骏"
+tags:
+    - eShop
 ---
 OAuth2.0定义了授权机制，用来授权第三方应用，获取用户数据。
 

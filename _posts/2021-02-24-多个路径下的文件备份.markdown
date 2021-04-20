@@ -1,8 +1,11 @@
 ---
-layout: post
-title:  "多个路径下的文件备份"
-date:   2021-02-24 11:31:19 +0800
-categories: linux
+layout:     post
+title:      "多个路径下的文件备份"
+subtitle:   "" 
+date:   2021-02-24
+author: "戚骏"
+tags:
+    - linux
 ---
 - **问题描述：**
 

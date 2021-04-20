@@ -10,7 +10,7 @@
     <meta name="keywords"  content="戚骏，个人博客， 游戏程序员">
     <meta name="theme-color" content="#000000">
     
-    <title>记一次磁盘分区与挂载 - 服务器 | 游戏| 戚骏</title>
+    <title>ProtoBuf - 服务器 | 游戏| 戚骏</title>
 
     <!-- Web App Manifest -->
     <link rel="manifest" href="/pwa/manifest.json">
@@ -19,7 +19,7 @@
     <link rel="shortcut icon" href="/img/favicon.ico">
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://operhero.github.io/linux/2021/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA%E4%B8%8E%E6%8C%82%E8%BD%BD/">
+    <link rel="canonical" href="https://operhero.github.io/2021/04/14/protobuf/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -183,13 +183,15 @@
                 <div class="post-heading">
                     <div class="tags">
                         
+                        <a class="tag" href="/tags/#eShop" title="eShop">eShop</a>
+                        
                     </div>
-                    <h1>记一次磁盘分区与挂载</h1>
+                    <h1>ProtoBuf</h1>
                     
                     
                     <h2 class="subheading"></h2>
                     
-                    <span class="meta">Posted by Focus Pixel on January 22, 2021</span>
+                    <span class="meta">Posted by 戚骏 on April 14, 2021</span>
                 </div>
             </div>
         </div>
@@ -207,50 +209,66 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-				<ul>
-  <li><strong>查看磁盘分区情况：</strong></li>
-</ul>
+				<h1 id="安装">安装</h1>
+<p><a href="https://github.com/protocolbuffers/protobuf/releases">github</a>下载protoc-3.15.8-win64.zip</p>
 
-<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	fdisk <span class="nt">-l</span> 或 fdisk <span class="nt">-f</span>
-</code></pre></div></div>
+<p>解压后，将/protoc-3.15.8-win64/bin所在目录添加到环境变量</p>
 
-<ul>
-  <li><strong>查看文件系统信息：</strong></li>
-</ul>
-
-<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="nb">df</span> <span class="nt">-h</span>
-</code></pre></div></div>
+<h1 id="demo">Demo</h1>
 
 <ul>
-  <li>
-    <p><strong>准备知识一：</strong>主分区、逻辑分区与扩展分区的区别</p>
-
-    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  主分区相当于c盘，扩展分区看不到，是逻辑分区的总和。
-</code></pre></div>    </div>
-  </li>
-  <li>
-    <p><strong>准备知识二：</strong>Linux标准的文件系统 Ext2/Ext3/Ext4/xfs</p>
-  </li>
-  <li>
-    <p><strong>目标：</strong> 我们只创建一个主分区，初始化格式为xfs，挂载到/data</p>
-  </li>
-  <li>
-    <p><strong>操作：</strong></p>
-  </li>
+  <li>新建一个myproto.proto文件，内容如下：</li>
 </ul>
 
-<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1  fdisk <span class="nt">-l</span> <span class="c">#查看到未分区的磁盘 /dev/vdb</span>
-2  fdisk /dev/vdb 进入分区命令行
-3  输入n
-4  输入p <span class="c">#p-主分区；e-扩展区；l-逻辑区</span>
-5  1~4之间，输入1
-6  回合 <span class="c">#选择默认分区起始的柱面</span>
-7  +200G <span class="c">#分区大小，+size{K,M,G}</span>
-8  p <span class="c">#查看分区</span>
-9  w <span class="c">#保存退出</span>
-10 mkfs.xfs <span class="nt">-f</span> /dev/vdb/
-11 <span class="nb">echo echo</span> <span class="s2">"/dev/vdb1            /data                xfs        defaults              1 2"</span> <span class="o">&gt;&gt;</span> /etc/fstab
-12 mount <span class="nt">-a</span>
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>syntax = "proto3";
+package my;
+
+message pb_team_info {
+    string team_id = 1;
+    string leader_id = 2;
+    repeated string members = 3;
+    int32 status = 4;
+}
+</code></pre></div></div>
+
+<p>syntax = “proto3”; 表示使用版本V3，不再支持required、optional等关键字，所有字段都有默认值
+package my; 定义类的命名空间</p>
+
+<ul>
+  <li>命令行输入</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>protoc .\myproto.proto --csharp_out=.
+</code></pre></div></div>
+<p>生成Myproto.cs</p>
+
+<ul>
+  <li>项目添加Myproto.cs，测试</li>
+</ul>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pb_team_info</span> <span class="n">teamInfo</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">pb_team_info</span><span class="p">();</span>
+<span class="n">teamInfo</span><span class="p">.</span><span class="n">LeaderId</span> <span class="p">=</span> <span class="s">"2222"</span><span class="p">;</span>
+<span class="n">teamInfo</span><span class="p">.</span><span class="n">Members</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"aaa"</span><span class="p">);</span>
+<span class="n">teamInfo</span><span class="p">.</span><span class="n">Members</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"bbb"</span><span class="p">);</span>
+<span class="n">teamInfo</span><span class="p">.</span><span class="n">Status</span> <span class="p">=</span> <span class="m">1</span><span class="p">;</span>
+<span class="n">teamInfo</span><span class="p">.</span><span class="n">TeamId</span> <span class="p">=</span> <span class="s">"myteam"</span><span class="p">;</span>
+
+<span class="kt">var</span> <span class="n">datas</span> <span class="p">=</span> <span class="n">teamInfo</span><span class="p">.</span><span class="nf">ToByteArray</span><span class="p">();</span>
+<span class="kt">var</span> <span class="n">str</span> <span class="p">=</span> <span class="n">teamInfo</span><span class="p">.</span><span class="nf">ToString</span><span class="p">();</span>
+
+<span class="n">pb_team_info</span> <span class="n">tb</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">pb_team_info</span><span class="p">();</span>
+<span class="n">tb</span><span class="p">.</span><span class="nf">MergeFrom</span><span class="p">(</span><span class="n">datas</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">jp</span> <span class="p">=</span> <span class="n">JsonConvert</span><span class="p">.</span><span class="n">DeserializeObject</span><span class="p">&lt;</span><span class="n">pb_team_info</span><span class="p">&gt;(</span><span class="n">str</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>ToByteArray方法生成字节数据，可用于构造出新的对象
+ToString方法会将对象json化成字符串</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="k">global</span><span class="p">::</span><span class="n">System</span><span class="p">.</span><span class="n">Diagnostics</span><span class="p">.</span><span class="n">DebuggerNonUserCodeAttribute</span><span class="p">]</span>
+<span class="k">public</span> <span class="k">override</span> <span class="kt">string</span> <span class="nf">ToString</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">pb</span><span class="p">::</span><span class="n">JsonFormatter</span><span class="p">.</span><span class="nf">ToDiagnosticString</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+<span class="p">}</span>
 </code></pre></div></div>
 
 
@@ -262,19 +280,12 @@
                 <ul class="pager">
                     
                     <li class="previous">
-                        <a href="/2021/01/22/%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85/" data-toggle="tooltip" data-placement="top" title="环境安装">
+                        <a href="/2021/04/14/grpc/" data-toggle="tooltip" data-placement="top" title="GRPC">
                         Previous<br>
-                        <span>环境安装</span>
+                        <span>GRPC</span>
                         </a>
                     </li>
                     
-                    
-                    <li class="next">
-                        <a href="/linux/2021/02/24/%E5%A4%9A%E4%B8%AA%E8%B7%AF%E5%BE%84%E4%B8%8B%E7%9A%84%E6%96%87%E4%BB%B6%E5%A4%87%E4%BB%BD/" data-toggle="tooltip" data-placement="top" title="多个路径下的文件备份">
-                        Next<br>
-                        <span>多个路径下的文件备份</span>
-                        </a>
-                    </li>
                     
                 </ul>
 
@@ -308,6 +319,16 @@
                     <div class="tags">
         				
                             
+                				<a href="/tags/#linux" title="linux" rel="3">
+                                    linux
+                                </a>
+                            
+        				
+                            
+                				<a href="/tags/#eShop" title="eShop" rel="6">
+                                    eShop
+                                </a>
+                            
         				
         			</div>
                 </section>
@@ -337,8 +358,8 @@
 <script type="text/javascript">
     /* * * CONFIGURATION VARIABLES * * */
     var disqus_shortname = "xiaoy-github-io";
-    var disqus_identifier = "/linux/2021/01/22/记一次磁盘分区与挂载";
-    var disqus_url = "https://operhero.github.io/linux/2021/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA%E4%B8%8E%E6%8C%82%E8%BD%BD/";
+    var disqus_identifier = "/2021/04/14/protobuf";
+    var disqus_url = "https://operhero.github.io/2021/04/14/protobuf/";
 
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
