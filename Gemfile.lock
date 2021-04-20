@@ -17,7 +17,7 @@ GEM
     colorator (1.1.0)
     concurrent-ruby (1.1.8)
     em-websocket (0.5.2)
-      eventmachine (>= 0.12.9)
+      eventmachine (>= 0.12.10)
       http_parser.rb (~> 0.6.0)
     ethon (0.13.0)
       ffi (>= 1.15.0)
