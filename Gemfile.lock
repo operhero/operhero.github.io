@@ -21,7 +21,7 @@ GEM
       http_parser.rb (~> 0.6.0)
     ethon (0.13.0)
       ffi (>= 1.15.0)
-    eventmachine (1.2.7-x86_64-linux)
+    eventmachine (1.2.7-x64-mingw32)
     ffi (1.15.0-x86_64-linux)
     forwardable-extended (2.6.0)
     html-proofer (3.19.1)
