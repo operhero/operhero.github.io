@@ -1,0 +1,46 @@
+I"�<ul>
+  <li><strong>查看磁盘分区情况：</strong></li>
+</ul>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	fdisk <span class="nt">-l</span> 或 fdisk <span class="nt">-f</span>
+</code></pre></div></div>
+
+<ul>
+  <li><strong>查看文件系统信息：</strong></li>
+</ul>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	<span class="nb">df</span> <span class="nt">-h</span>
+</code></pre></div></div>
+
+<ul>
+  <li>
+    <p><strong>准备知识一：</strong>主分区、逻辑分区与扩展分区的区别</p>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  主分区相当于c盘，扩展分区看不到，是逻辑分区的总和。
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p><strong>准备知识二：</strong>Linux标准的文件系统 Ext2/Ext3/Ext4/xfs</p>
+  </li>
+  <li>
+    <p><strong>目标：</strong> 我们只创建一个主分区，初始化格式为xfs，挂载到/data</p>
+  </li>
+  <li>
+    <p><strong>操作：</strong></p>
+  </li>
+</ul>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1  fdisk <span class="nt">-l</span> <span class="c">#查看到未分区的磁盘 /dev/vdb</span>
+2  fdisk /dev/vdb 进入分区命令行
+3  输入n
+4  输入p <span class="c">#p-主分区；e-扩展区；l-逻辑区</span>
+5  1~4之间，输入1
+6  回合 <span class="c">#选择默认分区起始的柱面</span>
+7  +200G <span class="c">#分区大小，+size{K,M,G}</span>
+8  p <span class="c">#查看分区</span>
+9  w <span class="c">#保存退出</span>
+10 mkfs.xfs <span class="nt">-f</span> /dev/vdb/
+11 <span class="nb">echo echo</span> <span class="s2">"/dev/vdb1            /data                xfs        defaults              1 2"</span> <span class="o">&gt;&gt;</span> /etc/fstab
+12 mount <span class="nt">-a</span>
+</code></pre></div></div>
+:ET

@@ -1,25 +1,21 @@
-<!--
-  The Disqus lazy loading.
-  Powered by: <https://github.com/osvaldasvalutis/disqusLoader.js>
--->
+{% if site.disqus_shortname and page.comments != false %}
 
-<div id="disqus" class="pt-2 pb-2">
-  <p class="text-center text-muted small pb-5">
-    Comments powered by <a href="https://disqus.com/">Disqus</a>.
-  </p>
-</div>
+<div id='disqus_thread'></div>
 
-<script src="{{ '/assets/js/lib/jquery.disqusloader.min.js' | relative_url }}"></script>
 <script>
-  const options = {
-    scriptUrl: '//{{ site.disqus.shortname }}.disqus.com/embed.js',
-
-    disqusConfig: function() {
-      this.page.title = '{{ page.title }}';
-      this.page.url = '{{ page.url | absolute_url }}';
-      this.page.identifier = '{{ page.url }}';
-    }
+  var disqus_config = function () {
+    this.page.url = '{{ page.url | absolute_url }}';
+    this.page.identifier = '{{ page.url | absolute_url }}';
   };
-
-  $.disqusLoader('#disqus', options);
+  (function () {
+    var d = document,
+      s = d.createElement('script');
+    s.src = 'https://{{ site.disqus_shortname }}.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
 </script>
+<noscript>Please enable JavaScript to view the <a href='https://disqus.com/?ref_noscript'>comments powered by
+    Disqus.</a></noscript>
+
+{% endif %}

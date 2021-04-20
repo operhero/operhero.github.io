@@ -1,21 +1,18 @@
 ---
-layout: page
-title: "404: Page not found"
 permalink: /404.html
-
-redirect_from:
-  - /norobots/
-  - /assets/
-  - /posts/
-
-dynamic_title: true
 ---
 
-<div class="lead">
-  <p>Sorry, we've misplaced that URL or it's pointing to something that doesn't exist. </p>
-  <p>
-    <a href="{{ '/' | relative_url }}">Head back Home</a>
-    to try finding it again, or search for it on the
-    <a href="{{ 'archives' | relative_url }}">Archives page</a>.
-  </p>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+  {% include head.html %}
+<body>
+  <section class="fourzerofour">
+      <p>
+        <img src="{{ '/assets/img/cat_404.jpg' | relative_url }}" width="300px"><br>
+        404 page not found <br>
+        Go <a href="{{ '/' | relative_url }}">home</a> :)
+      </p>
+  </section>
+
+</body>
+</html>

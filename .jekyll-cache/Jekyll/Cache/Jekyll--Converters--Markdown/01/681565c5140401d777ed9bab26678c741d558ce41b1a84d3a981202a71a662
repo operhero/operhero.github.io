@@ -1,0 +1,218 @@
+I"HS<h1 id="windows环境安装">Windows环境安装</h1>
+
+<ul>
+  <li>
+    <p>安装Erlang运行环境 下载安装<a href="http://www.erlang.org/downloads">Erlang：http://www.erlang.org/downloads</a>。</p>
+  </li>
+  <li>
+    <p>安装RabbitMQ 下载安装Windows版本的<a href="http://www.rabbitmq.com/install-windows.html">RabbitMQ：http://www.rabbitmq.com/install-windows.html</a>。</p>
+  </li>
+  <li>
+    <p>启动RabbitMQ Server 点击Windows开始按钮，输入RabbitMQ找到 RabbitMQCommanPrompt，以管理员身份运行。</p>
+  </li>
+  <li>
+    <p>依次执行以下命令启动RabbitMQ服务 rabbitmq-service install rabbitmq-service enable rabbitmq-service start</p>
+  </li>
+  <li>
+    <p>执行 rabbitmqlctl status检查RabbitMQ状态</p>
+  </li>
+  <li>
+    <p>安装管理平台插件 执行 rabbitmq-plugins enable rabbitmq_management即可成功安装，使用默认账号密码（guest/guest）登录<a href="http://localhost:15672/">http://localhost:15672/</a>即可。</p>
+  </li>
+</ul>
+
+<h1 id="专有名词说明">专有名词说明</h1>
+
+<ul>
+  <li>
+    <p>Publisher：生产者，消息的发送方。</p>
+  </li>
+  <li>
+    <p>Connection：网络连接。</p>
+  </li>
+  <li>
+    <p>Channel：信道，多路复用连接中的一条独立的双向数据流通道。</p>
+  </li>
+  <li>
+    <p>Exchange：交换器（路由器），负责消息的路由到相应队列。</p>
+  </li>
+  <li>
+    <p>Binding：队列与交换器间的关联绑定。消费者将关注的队列绑定到指定交换器上，以便Exchange能准确分发消息到指定队列。</p>
+  </li>
+  <li>
+    <p>Queue：队列，消息的缓冲存储区。</p>
+  </li>
+  <li>
+    <p>Virtual Host：虚拟主机，虚拟主机提供资源的逻辑分组和分离。包含连接，交换，队列，绑定，用户权限，策略等。</p>
+  </li>
+  <li>
+    <p>Broker：消息队列的服务器实体。</p>
+  </li>
+  <li>
+    <p>Consumer：消费者，消息的接收方。</p>
+  </li>
+</ul>
+
+<h1 id="聊天室的实现">聊天室的实现</h1>
+
+<p>每个玩家有唯一的用户名</p>
+
+<p>输入/用户 可以对指定用户进行私聊</p>
+
+<p>否则为发送的公共聊天消息</p>
+
+<p>实现如下：</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Text</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">RabbitMQ.Client</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">RabbitMQ.Client.Events</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="nn">MQ</span>
+<span class="p">{</span>
+    <span class="k">class</span> <span class="nc">Program</span>
+    <span class="p">{</span>
+        <span class="k">static</span> <span class="kt">string</span> <span class="n">exchangeName</span> <span class="p">=</span> <span class="s">"chat"</span><span class="p">;</span>
+        <span class="k">private</span> <span class="k">static</span> <span class="kt">string</span> <span class="n">queueName</span> <span class="p">=</span> <span class="s">"room_"</span><span class="p">;</span>
+        <span class="k">private</span> <span class="k">static</span> <span class="kt">string</span> <span class="n">routeKey</span> <span class="p">=</span> <span class="s">""</span><span class="p">;</span>
+        <span class="k">private</span> <span class="k">static</span> <span class="kt">string</span> <span class="n">user</span><span class="p">;</span>
+        <span class="k">private</span> <span class="k">static</span> <span class="n">IModel</span> <span class="n">channel</span><span class="p">;</span>
+
+        <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">user</span> <span class="p">=</span> <span class="n">args</span><span class="p">[</span><span class="m">0</span><span class="p">];</span>
+            <span class="n">queueName</span> <span class="p">+=</span> <span class="n">user</span><span class="p">;</span>
+            <span class="c1">// 创建连接工厂</span>
+            <span class="n">ConnectionFactory</span> <span class="n">factory</span> <span class="p">=</span> <span class="k">new</span> <span class="n">ConnectionFactory</span>
+            <span class="p">{</span>
+                <span class="n">UserName</span> <span class="p">=</span> <span class="s">"root"</span><span class="p">,</span> <span class="c1">//用户名</span>
+                <span class="n">Password</span> <span class="p">=</span> <span class="s">"root"</span><span class="p">,</span> <span class="c1">//密码</span>
+                <span class="n">HostName</span> <span class="p">=</span> <span class="s">"127.0.0.1"</span> <span class="c1">//rabbitmq ip</span>
+            <span class="p">};</span>
+
+            <span class="c1">// 创建连接</span>
+            <span class="kt">var</span> <span class="n">connection</span> <span class="p">=</span> <span class="n">factory</span><span class="p">.</span><span class="nf">CreateConnection</span><span class="p">();</span>
+            <span class="c1">// 创建通道</span>
+            <span class="n">channel</span> <span class="p">=</span> <span class="n">connection</span><span class="p">.</span><span class="nf">CreateModel</span><span class="p">();</span>
+
+            <span class="nf">DeclarePublicChannel</span><span class="p">();</span>
+            <span class="nf">DeclarePrivateChannel</span><span class="p">();</span>
+
+            <span class="k">while</span> <span class="p">(</span><span class="k">true</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="kt">var</span> <span class="n">input</span> <span class="p">=</span> <span class="n">Console</span><span class="p">.</span><span class="nf">ReadLine</span><span class="p">();</span>
+                <span class="k">switch</span> <span class="p">(</span><span class="n">input</span><span class="p">)</span>
+                <span class="p">{</span>
+                    <span class="k">case</span> <span class="s">"exit"</span><span class="p">:</span>
+                        <span class="nf">Exit</span><span class="p">();</span>
+                        <span class="k">break</span><span class="p">;</span>
+                    <span class="k">default</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="nf">StartsWith</span><span class="p">(</span><span class="s">"/"</span><span class="p">))</span>
+                        <span class="p">{</span>
+                            <span class="kt">var</span> <span class="n">index</span> <span class="p">=</span> <span class="n">input</span><span class="p">.</span><span class="nf">IndexOf</span><span class="p">(</span><span class="sc">' '</span><span class="p">);</span>
+                            <span class="kt">var</span> <span class="n">target</span> <span class="p">=</span> <span class="n">input</span><span class="p">.</span><span class="nf">Substring</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="n">index</span> <span class="p">-</span> <span class="m">1</span><span class="p">);</span>
+                            <span class="kt">var</span> <span class="n">msg</span> <span class="p">=</span> <span class="n">input</span><span class="p">.</span><span class="nf">Substring</span><span class="p">(</span><span class="n">index</span> <span class="p">+</span> <span class="m">1</span><span class="p">);</span>
+                            <span class="nf">SendPrivateMsg</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">msg</span><span class="p">);</span>
+                        <span class="p">}</span>
+                        <span class="k">else</span>
+                        <span class="p">{</span>
+                            <span class="nf">SendPublicMsg</span><span class="p">(</span><span class="n">input</span><span class="p">);</span>
+                        <span class="p">}</span>
+                        <span class="k">break</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="n">channel</span><span class="p">.</span><span class="nf">Close</span><span class="p">();</span>
+            <span class="n">connection</span><span class="p">.</span><span class="nf">Close</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="k">private</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">DeclarePublicChannel</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="c1">//定义一个Direct类型交换机</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">ExchangeDeclare</span><span class="p">(</span><span class="n">exchangeName</span><span class="p">,</span> <span class="n">ExchangeType</span><span class="p">.</span><span class="n">Fanout</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="k">null</span><span class="p">);</span>
+
+            <span class="c1">//定义队列1</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">QueueDeclare</span><span class="p">(</span><span class="n">queueName</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="k">null</span><span class="p">);</span>
+
+            <span class="n">channel</span><span class="p">.</span><span class="nf">QueueBind</span><span class="p">(</span><span class="n">queueName</span><span class="p">,</span> <span class="n">exchangeName</span><span class="p">,</span> <span class="n">routeKey</span><span class="p">);</span>
+
+            <span class="c1">//生成两个队列的消费者</span>
+            <span class="c1">//事件基本消费者</span>
+            <span class="n">EventingBasicConsumer</span> <span class="n">consumer</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">EventingBasicConsumer</span><span class="p">(</span><span class="n">channel</span><span class="p">);</span>
+
+            <span class="c1">//接收到消息事件</span>
+            <span class="n">consumer</span><span class="p">.</span><span class="n">Received</span> <span class="p">+=</span> <span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">ea</span><span class="p">)</span> <span class="p">=&gt;</span>
+            <span class="p">{</span>
+                <span class="kt">var</span> <span class="n">message</span> <span class="p">=</span> <span class="n">Encoding</span><span class="p">.</span><span class="n">UTF8</span><span class="p">.</span><span class="nf">GetString</span><span class="p">(</span><span class="n">ea</span><span class="p">.</span><span class="n">Body</span><span class="p">.</span><span class="nf">ToArray</span><span class="p">());</span>
+
+                <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">message</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+                <span class="c1">//确认该消息已被消费</span>
+                <span class="n">channel</span><span class="p">.</span><span class="nf">BasicAck</span><span class="p">(</span><span class="n">ea</span><span class="p">.</span><span class="n">DeliveryTag</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+            <span class="p">};</span>
+            <span class="c1">//启动消费者 设置为手动应答消息</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">BasicConsume</span><span class="p">(</span><span class="n">queueName</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="n">consumer</span><span class="p">);</span>
+        <span class="p">}</span>
+        
+        <span class="k">private</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">DeclarePrivateChannel</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">privateQueueName</span> <span class="p">=</span> <span class="n">user</span><span class="p">;</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">QueueDeclare</span><span class="p">(</span><span class="n">privateQueueName</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="k">null</span><span class="p">);</span>
+            <span class="n">EventingBasicConsumer</span> <span class="n">consumer</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">EventingBasicConsumer</span><span class="p">(</span><span class="n">channel</span><span class="p">);</span>
+            <span class="n">consumer</span><span class="p">.</span><span class="n">Received</span> <span class="p">+=</span> <span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">ea</span><span class="p">)</span> <span class="p">=&gt;</span>
+            <span class="p">{</span>
+                <span class="kt">var</span> <span class="n">message</span> <span class="p">=</span> <span class="n">Encoding</span><span class="p">.</span><span class="n">UTF8</span><span class="p">.</span><span class="nf">GetString</span><span class="p">(</span><span class="n">ea</span><span class="p">.</span><span class="n">Body</span><span class="p">.</span><span class="nf">ToArray</span><span class="p">());</span>
+                <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">message</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+            <span class="p">};</span>
+            <span class="c1">//启动消费者 设置为手动应答消息</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">BasicConsume</span><span class="p">(</span><span class="n">privateQueueName</span><span class="p">,</span> <span class="k">true</span><span class="p">,</span> <span class="n">consumer</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">private</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Exit</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="c1">//将队列绑定到交换机</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">QueueUnbind</span><span class="p">(</span><span class="n">queueName</span><span class="p">,</span> <span class="n">exchangeName</span><span class="p">,</span> <span class="n">routeKey</span><span class="p">,</span> <span class="k">null</span><span class="p">);</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">QueueDelete</span><span class="p">(</span><span class="n">queueName</span><span class="p">);</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">QueueDelete</span><span class="p">(</span><span class="n">user</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">private</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">SendPublicMsg</span><span class="p">(</span><span class="kt">string</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">properties</span> <span class="p">=</span> <span class="n">channel</span><span class="p">.</span><span class="nf">CreateBasicProperties</span><span class="p">();</span>
+            <span class="n">properties</span><span class="p">.</span><span class="n">Expiration</span> <span class="p">=</span> <span class="s">"10000"</span><span class="p">;</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">BasicPublish</span><span class="p">(</span><span class="n">exchangeName</span><span class="p">,</span> <span class="n">routeKey</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">Encoding</span><span class="p">.</span><span class="n">UTF8</span><span class="p">.</span><span class="nf">GetBytes</span><span class="p">(</span><span class="n">user</span> <span class="p">+</span> <span class="s">": "</span> <span class="p">+</span> <span class="n">msg</span><span class="p">));</span>
+        <span class="p">}</span>
+
+        <span class="k">private</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">SendPrivateMsg</span><span class="p">(</span><span class="n">String</span> <span class="n">target</span><span class="p">,</span> <span class="n">String</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">BasicPublish</span><span class="p">(</span><span class="s">""</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="k">null</span><span class="p">,</span> <span class="n">Encoding</span><span class="p">.</span><span class="n">UTF8</span><span class="p">.</span><span class="nf">GetBytes</span><span class="p">(</span><span class="n">user</span> <span class="p">+</span> <span class="s">": "</span> <span class="p">+</span> <span class="n">msg</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>运行结果</p>
+
+<p><img src="/images/mq/mq.bmp" alt="结果展示" /></p>
+
+<p>私聊通过路由来实现。每个用户都会创建一个队列，以用户名命名队列名。消息发送者通过指定路由发送给特定消息队列处理</p>
+
+<p>公共聊天通过消息广播的形式（fanout），发送给每个注册到exchange上的队列</p>
+
+<p>公共聊天设置了消息过期时间</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">properties</span> <span class="p">=</span> <span class="n">channel</span><span class="p">.</span><span class="nf">CreateBasicProperties</span><span class="p">();</span>
+<span class="n">properties</span><span class="p">.</span><span class="n">Expiration</span> <span class="p">=</span> <span class="s">"10000"</span><span class="p">;</span>
+<span class="n">channel</span><span class="p">.</span><span class="nf">BasicPublish</span><span class="p">(</span><span class="n">exchangeName</span><span class="p">,</span> <span class="n">routeKey</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">Encoding</span><span class="p">.</span><span class="n">UTF8</span><span class="p">.</span><span class="nf">GetBytes</span><span class="p">(</span><span class="n">user</span> <span class="p">+</span> <span class="s">": "</span> <span class="p">+</span> <span class="n">msg</span><span class="p">));</span>
+</code></pre></div></div>
+<p>Expiration的单位为毫秒。超过10秒未被处理的消息将被删除</p>
+
+<p>公共消息消费完后，手动通知broker移除队列中的消息：</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">channel</span><span class="p">.</span><span class="nf">BasicAck</span><span class="p">(</span><span class="n">ea</span><span class="p">.</span><span class="n">DeliveryTag</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>其中第二个参数multiple，为true时表示之前的消息批量处理为完毕，为false时表示只对当前消息设置成功处理。BasicAck的更多参数说明可以参考<a href="https://www.jianshu.com/p/c25444c027c1">RabbitMQ消息可靠投递及消费机制</a></p>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://mp.weixin.qq.com/s?__biz=MzIwMDM3MjcxOQ==&amp;mid=2458772826&amp;idx=1&amp;sn=9f46b3dd3384c17851a054e7bd2c0868&amp;chksm=81877ddab6f0f4ccd32db9d3daf608724133db673626a140b1efa971170cf96d3699c0780691&amp;scene=21#wechat_redirect">RabbitMQ 知多少</a></p>
+
+<p><a href="https://www.jianshu.com/p/c25444c027c1">RabbitMQ消息可靠投递及消费机制</a></p>
+:ET

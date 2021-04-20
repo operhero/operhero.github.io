@@ -1,0 +1,60 @@
+I"0<p><strong>项目添加引用</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Install-Package Grpc
+Install-Package Google.Protobuf
+Install-Package Grpc.Tools
+</code></pre></div></div>
+
+<p><strong>定义helloworld.proto</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>syntax = "proto3";
+package gRPCDemo;
+service gRPC {
+  rpc SayHello (HelloRequest) returns (HelloReply) {}
+}
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloReply {
+  string message = 1;
+}
+</code></pre></div></div>
+
+<p><strong>生成Helloworld.cs及HelloworldGrpc.cs类</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> C:\Users\用户\.nuget\packages\grpc.tools\2.37.0\tools\windows_x64\protoc --csharp_out .  helloworld.proto --grpc_out . --plugin=protoc-gen-grpc=C:\Users\用户\.nuget\packages\grpc.tools\2.37.0\tools\windows_x64\grpc_csharp_plugin.exe
+</code></pre></div></div>
+
+<p>网上的例子是</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>packages\Grpc.Tools.1.0.0\tools\windows_x86\protoc.exe -IgRPCDemo --csharp_out gRPCDemo  gRPCDemo\helloworld.proto --grpc_out gRPCDemo --plugin=protoc-gen-grpc=packages\Grpc.Tools.1.0.0\tools\windows_x86\grpc_csharp_plugin.exe
+</code></pre></div></div>
+
+<p>需要使用visual studio，在PM命令行中使用。我的使用Rider，未找到PM命令行，所以使用绝对路径执行</p>
+
+<p><strong>工程demo</strong></p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">gRPCImpl</span> <span class="p">:</span> <span class="n">gRPC</span><span class="p">.</span><span class="n">gRPCBase</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">override</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">HelloReply</span><span class="p">&gt;</span> <span class="nf">SayHello</span><span class="p">(</span><span class="n">HelloRequest</span> <span class="n">request</span><span class="p">,</span> <span class="n">ServerCallContext</span> <span class="n">context</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="n">Task</span><span class="p">.</span><span class="nf">FromResult</span><span class="p">(</span><span class="k">new</span> <span class="n">HelloReply</span> <span class="p">{</span><span class="n">Message</span> <span class="p">=</span> <span class="s">"Hello "</span> <span class="p">+</span> <span class="n">request</span><span class="p">.</span><span class="n">Name</span><span class="p">});</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">Port</span> <span class="p">=</span> <span class="m">9007</span><span class="p">;</span>
+    
+    <span class="n">Server</span> <span class="n">server</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Server</span>
+    <span class="p">{</span>
+        <span class="n">Services</span> <span class="p">=</span> <span class="p">{</span><span class="n">gRPC</span><span class="p">.</span><span class="nf">BindService</span><span class="p">(</span><span class="k">new</span> <span class="nf">gRPCImpl</span><span class="p">())},</span>
+        <span class="n">Ports</span> <span class="p">=</span> <span class="p">{</span><span class="k">new</span> <span class="nf">ServerPort</span><span class="p">(</span><span class="s">"localhost"</span><span class="p">,</span> <span class="n">Port</span><span class="p">,</span> <span class="n">ServerCredentials</span><span class="p">.</span><span class="n">Insecure</span><span class="p">)}</span>
+    <span class="p">};</span>
+    <span class="n">server</span><span class="p">.</span><span class="nf">Start</span><span class="p">();</span>
+    
+    <span class="n">Channel</span> <span class="n">channel</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Channel</span><span class="p">(</span><span class="s">"127.0.0.1:"</span><span class="p">+</span><span class="n">Port</span><span class="p">,</span> <span class="n">ChannelCredentials</span><span class="p">.</span><span class="n">Insecure</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">client</span> <span class="p">=</span> <span class="k">new</span> <span class="n">gRPC</span><span class="p">.</span><span class="nf">gRPCClient</span><span class="p">(</span><span class="n">channel</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">reply</span> <span class="p">=</span> <span class="n">client</span><span class="p">.</span><span class="nf">SayHello</span><span class="p">(</span><span class="k">new</span> <span class="n">HelloRequest</span> <span class="p">{</span><span class="n">Name</span> <span class="p">=</span> <span class="s">"xxx"</span><span class="p">});</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">"返回结果: "</span><span class="p">+</span><span class="n">reply</span><span class="p">.</span><span class="n">Message</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+:ET
