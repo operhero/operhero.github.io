@@ -7,9 +7,9 @@ categories: eShop
 
 # Windows环境安装
 
-- 安装[Erlang](http://www.erlang.org/downloads)运行环境。
+- 安装Erlang运行环境 下载安装[Erlang：http://www.erlang.org/downloads](http://www.erlang.org/downloads)。
 
-- 安装[RabbitMQ](http://www.rabbitmq.com/install-windows.html)。
+- 安装RabbitMQ 下载安装Windows版本的[RabbitMQ：http://www.rabbitmq.com/install-windows.html](http://www.rabbitmq.com/install-windows.html)。
 
 - 启动RabbitMQ Server 点击Windows开始按钮，输入RabbitMQ找到 RabbitMQCommanPrompt，以管理员身份运行。
 
@@ -139,7 +139,7 @@ namespace MQ
             //启动消费者 设置为手动应答消息
             channel.BasicConsume(queueName, false, consumer);
         }
-
+        
         private static void DeclarePrivateChannel()
         {
             var privateQueueName = user;

@@ -1,0 +1,106 @@
+I"�-<p>visual studio 2019 新建 .Net Core 3.1 Console工程</p>
+
+<p>添加程序包：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Microsoft.EntityFrameworkCore.Tools version:3.1.14
+Microsoft.EntityFrameworkCore.Design version:3.1.14
+Pomelo.EntityFrameworkCore.MySql version:3.2.4
+</code></pre></div></div>
+
+<p>新建数据库：</p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">-- 创建角色&amp;菜单简单逻辑表</span>
+<span class="k">create</span> <span class="k">database</span> <span class="n">RoleMenu</span><span class="p">;</span>
+<span class="k">grant</span> <span class="k">all</span> <span class="k">on</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">to</span> <span class="s1">'root'</span><span class="o">@</span><span class="s1">'localhost'</span> <span class="n">identified</span> <span class="k">by</span> <span class="s1">'root'</span><span class="p">;</span>
+
+<span class="n">use</span> <span class="n">RoleMenu</span><span class="p">;</span>
+<span class="c1">-- drop table Role_Menu,Role,Menu;</span>
+<span class="c1">-- 创建角色表</span>
+<span class="k">create</span> <span class="k">table</span> <span class="k">Role</span><span class="p">(</span>
+<span class="n">RoleID</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span>  <span class="n">auto_increment</span><span class="p">,</span>
+<span class="n">Name</span> <span class="n">nvarchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+<span class="n">SortValue</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+<span class="k">primary</span> <span class="k">key</span><span class="p">(</span><span class="n">RoleID</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="c1">-- 创建菜单表 </span>
+<span class="k">create</span> <span class="k">table</span> <span class="n">Menu</span><span class="p">(</span>
+<span class="n">MenuID</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span> <span class="n">auto_increment</span><span class="p">,</span>
+<span class="n">Name</span> <span class="n">nvarchar</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+<span class="n">Title</span> <span class="n">nvarchar</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+<span class="n">LinkUrl</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span> <span class="k">null</span><span class="p">,</span>
+<span class="n">Icon</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span> <span class="k">null</span><span class="p">,</span>
+<span class="k">primary</span> <span class="k">key</span><span class="p">(</span><span class="n">MenuID</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="c1">-- 创建角色-菜单表 </span>
+<span class="k">create</span> <span class="k">table</span> <span class="n">Role_Menu</span><span class="p">(</span>
+<span class="n">ID</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span> <span class="n">auto_increment</span><span class="p">,</span>
+<span class="n">RoleID</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+<span class="n">MenuID</span> <span class="nb">int</span> <span class="k">not</span> <span class="k">null</span><span class="p">,</span>
+<span class="k">primary</span> <span class="k">key</span><span class="p">(</span><span class="n">ID</span><span class="p">),</span>
+<span class="k">foreign</span> <span class="k">key</span><span class="p">(</span><span class="n">RoleID</span><span class="p">)</span> <span class="k">references</span> <span class="k">Role</span><span class="p">(</span><span class="n">RoleID</span><span class="p">)</span>
+<span class="k">on</span> <span class="k">delete</span> <span class="k">cascade</span><span class="p">,</span>
+<span class="k">foreign</span> <span class="k">key</span><span class="p">(</span><span class="n">MenuID</span><span class="p">)</span> <span class="k">references</span> <span class="n">Menu</span><span class="p">(</span><span class="n">MenuID</span><span class="p">)</span>
+<span class="k">on</span> <span class="k">delete</span> <span class="k">no</span> <span class="n">action</span>
+<span class="p">);</span>
+
+<span class="c1">-- 添加测试数据 </span>
+<span class="k">insert</span> <span class="k">Role</span><span class="p">(</span><span class="n">Name</span><span class="p">,</span><span class="n">SortValue</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="s1">'系统管理员'</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">insert</span> <span class="k">Role</span><span class="p">(</span><span class="n">Name</span><span class="p">,</span><span class="n">SortValue</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="s1">'服务中心'</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span>
+
+<span class="c1">-- 添加菜单数据 </span>
+<span class="k">insert</span> <span class="n">Menu</span><span class="p">(</span><span class="n">Name</span><span class="p">,</span><span class="n">Title</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="s1">'个人信息'</span><span class="p">,</span><span class="s1">'个人信息管理'</span><span class="p">);</span>
+<span class="k">insert</span> <span class="n">Menu</span><span class="p">(</span><span class="n">Name</span><span class="p">,</span><span class="n">Title</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="s1">'修改密码'</span><span class="p">,</span><span class="s1">'修改登录密码&amp;二级密码'</span><span class="p">);</span>
+
+<span class="c1">-- 添加关联 </span>
+<span class="k">insert</span> <span class="n">Role_Menu</span><span class="p">(</span><span class="n">RoleID</span><span class="p">,</span><span class="n">MenuID</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">insert</span> <span class="n">Role_Menu</span><span class="p">(</span><span class="n">RoleID</span><span class="p">,</span><span class="n">MenuID</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span>
+<span class="k">insert</span> <span class="n">Role_Menu</span><span class="p">(</span><span class="n">RoleID</span><span class="p">,</span><span class="n">MenuID</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">insert</span> <span class="n">Role_Menu</span><span class="p">(</span><span class="n">RoleID</span><span class="p">,</span><span class="n">MenuID</span><span class="p">)</span> <span class="k">values</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>PM终端中输入指令：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Scaffold-DbContext "Server=127.0.0.1;port=3306;Database=RoleMenu;uid=root;pwd=root;Character Set=utf8;" Pomelo.EntityFrameworkCore.MySql -OutputDir Models
+</code></pre></div></div>
+
+<p>在Models目录中生成了映射类：</p>
+
+<p>Menu Role RoleMenu RoleMenuContext</p>
+
+<p>增删查改</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">EF.Models</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="nn">EF</span>
+<span class="p">{</span>
+    <span class="k">class</span> <span class="nc">Program</span>
+    <span class="p">{</span>
+        <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">using</span> <span class="p">(</span><span class="kt">var</span> <span class="n">db</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">RoleMenuContext</span><span class="p">())</span>
+            <span class="p">{</span>
+                <span class="c1">// Create</span>
+                <span class="kt">var</span> <span class="n">role</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Role</span><span class="p">();</span>
+                <span class="n">role</span><span class="p">.</span><span class="n">Name</span> <span class="p">=</span> <span class="s">"游客"</span><span class="p">;</span>
+                <span class="n">role</span><span class="p">.</span><span class="n">SortValue</span> <span class="p">=</span> <span class="m">3</span><span class="p">;</span>
+                <span class="n">db</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">role</span><span class="p">);</span>
+                <span class="n">db</span><span class="p">.</span><span class="nf">SaveChanges</span><span class="p">();</span>
+
+                <span class="c1">// Read</span>
+                <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">r</span> <span class="k">in</span> <span class="n">db</span><span class="p">.</span><span class="n">Role</span><span class="p">)</span>
+                <span class="p">{</span>
+                    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">Name</span><span class="p">);</span>
+                <span class="p">}</span>
+
+                <span class="c1">// Update</span>
+                <span class="n">role</span><span class="p">.</span><span class="n">Name</span> <span class="p">=</span> <span class="s">"临时游客"</span><span class="p">;</span>
+                <span class="n">db</span><span class="p">.</span><span class="nf">SaveChanges</span><span class="p">();</span>
+
+                <span class="c1">// Delete</span>
+                <span class="n">db</span><span class="p">.</span><span class="nf">Remove</span><span class="p">(</span><span class="n">role</span><span class="p">);</span>
+                <span class="n">db</span><span class="p">.</span><span class="nf">SaveChanges</span><span class="p">();</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+:ET

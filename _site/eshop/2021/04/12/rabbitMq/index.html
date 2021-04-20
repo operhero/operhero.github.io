@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="一个游戏开发人员">
+    <meta name="keywords"  content="戚骏，个人博客， 游戏程序员">
+    <meta name="theme-color" content="#000000">
+    
+    <title>Rabbit MQ - 服务器 | 游戏| 戚骏</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://operhero.github.io/eshop/2021/04/12/rabbitMq/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script type="text/x-mathjax-config"> MathJax.Hub.Config({ TeX: { equationNumbers: { autoNumber: "all" } } }); </script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+           tex2jax: {
+             inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+             processEscapes: true
+           }
+         });
+    </script>
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Focus Pixel</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/about/">About</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/portfolio/">Portfolio</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/tags/">Tags</a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        position: relative;
+        background-image: url('/')
+    }
+
+    
+</style>
+<header class="intro-header" >
+    <div class="header-mask"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>Rabbit MQ</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by Focus Pixel on April 12, 2021</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h1 id="windows环境安装">Windows环境安装</h1>
+
+<ul>
+  <li>
+    <p>安装Erlang运行环境 下载安装<a href="http://www.erlang.org/downloads">Erlang：http://www.erlang.org/downloads</a>。</p>
+  </li>
+  <li>
+    <p>安装RabbitMQ 下载安装Windows版本的<a href="http://www.rabbitmq.com/install-windows.html">RabbitMQ：http://www.rabbitmq.com/install-windows.html</a>。</p>
+  </li>
+  <li>
+    <p>启动RabbitMQ Server 点击Windows开始按钮，输入RabbitMQ找到 RabbitMQCommanPrompt，以管理员身份运行。</p>
+  </li>
+  <li>
+    <p>依次执行以下命令启动RabbitMQ服务 rabbitmq-service install rabbitmq-service enable rabbitmq-service start</p>
+  </li>
+  <li>
+    <p>执行 rabbitmqlctl status检查RabbitMQ状态</p>
+  </li>
+  <li>
+    <p>安装管理平台插件 执行 rabbitmq-plugins enable rabbitmq_management即可成功安装，使用默认账号密码（guest/guest）登录<a href="http://localhost:15672/">http://localhost:15672/</a>即可。</p>
+  </li>
+</ul>
+
+<h1 id="专有名词说明">专有名词说明</h1>
+
+<ul>
+  <li>
+    <p>Publisher：生产者，消息的发送方。</p>
+  </li>
+  <li>
+    <p>Connection：网络连接。</p>
+  </li>
+  <li>
+    <p>Channel：信道，多路复用连接中的一条独立的双向数据流通道。</p>
+  </li>
+  <li>
+    <p>Exchange：交换器（路由器），负责消息的路由到相应队列。</p>
+  </li>
+  <li>
+    <p>Binding：队列与交换器间的关联绑定。消费者将关注的队列绑定到指定交换器上，以便Exchange能准确分发消息到指定队列。</p>
+  </li>
+  <li>
+    <p>Queue：队列，消息的缓冲存储区。</p>
+  </li>
+  <li>
+    <p>Virtual Host：虚拟主机，虚拟主机提供资源的逻辑分组和分离。包含连接，交换，队列，绑定，用户权限，策略等。</p>
+  </li>
+  <li>
+    <p>Broker：消息队列的服务器实体。</p>
+  </li>
+  <li>
+    <p>Consumer：消费者，消息的接收方。</p>
+  </li>
+</ul>
+
+<h1 id="聊天室的实现">聊天室的实现</h1>
+
+<p>每个玩家有唯一的用户名</p>
+
+<p>输入/用户 可以对指定用户进行私聊</p>
+
+<p>否则为发送的公共聊天消息</p>
+
+<p>实现如下：</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Text</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">RabbitMQ.Client</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">RabbitMQ.Client.Events</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="nn">MQ</span>
+<span class="p">{</span>
+    <span class="k">class</span> <span class="nc">Program</span>
+    <span class="p">{</span>
+        <span class="k">static</span> <span class="kt">string</span> <span class="n">exchangeName</span> <span class="p">=</span> <span class="s">"chat"</span><span class="p">;</span>
+        <span class="k">private</span> <span class="k">static</span> <span class="kt">string</span> <span class="n">queueName</span> <span class="p">=</span> <span class="s">"room_"</span><span class="p">;</span>
+        <span class="k">private</span> <span class="k">static</span> <span class="kt">string</span> <span class="n">routeKey</span> <span class="p">=</span> <span class="s">""</span><span class="p">;</span>
+        <span class="k">private</span> <span class="k">static</span> <span class="kt">string</span> <span class="n">user</span><span class="p">;</span>
+        <span class="k">private</span> <span class="k">static</span> <span class="n">IModel</span> <span class="n">channel</span><span class="p">;</span>
+
+        <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">user</span> <span class="p">=</span> <span class="n">args</span><span class="p">[</span><span class="m">0</span><span class="p">];</span>
+            <span class="n">queueName</span> <span class="p">+=</span> <span class="n">user</span><span class="p">;</span>
+            <span class="c1">// 创建连接工厂</span>
+            <span class="n">ConnectionFactory</span> <span class="n">factory</span> <span class="p">=</span> <span class="k">new</span> <span class="n">ConnectionFactory</span>
+            <span class="p">{</span>
+                <span class="n">UserName</span> <span class="p">=</span> <span class="s">"root"</span><span class="p">,</span> <span class="c1">//用户名</span>
+                <span class="n">Password</span> <span class="p">=</span> <span class="s">"root"</span><span class="p">,</span> <span class="c1">//密码</span>
+                <span class="n">HostName</span> <span class="p">=</span> <span class="s">"127.0.0.1"</span> <span class="c1">//rabbitmq ip</span>
+            <span class="p">};</span>
+
+            <span class="c1">// 创建连接</span>
+            <span class="kt">var</span> <span class="n">connection</span> <span class="p">=</span> <span class="n">factory</span><span class="p">.</span><span class="nf">CreateConnection</span><span class="p">();</span>
+            <span class="c1">// 创建通道</span>
+            <span class="n">channel</span> <span class="p">=</span> <span class="n">connection</span><span class="p">.</span><span class="nf">CreateModel</span><span class="p">();</span>
+
+            <span class="nf">DeclarePublicChannel</span><span class="p">();</span>
+            <span class="nf">DeclarePrivateChannel</span><span class="p">();</span>
+
+            <span class="k">while</span> <span class="p">(</span><span class="k">true</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="kt">var</span> <span class="n">input</span> <span class="p">=</span> <span class="n">Console</span><span class="p">.</span><span class="nf">ReadLine</span><span class="p">();</span>
+                <span class="k">switch</span> <span class="p">(</span><span class="n">input</span><span class="p">)</span>
+                <span class="p">{</span>
+                    <span class="k">case</span> <span class="s">"exit"</span><span class="p">:</span>
+                        <span class="nf">Exit</span><span class="p">();</span>
+                        <span class="k">break</span><span class="p">;</span>
+                    <span class="k">default</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="nf">StartsWith</span><span class="p">(</span><span class="s">"/"</span><span class="p">))</span>
+                        <span class="p">{</span>
+                            <span class="kt">var</span> <span class="n">index</span> <span class="p">=</span> <span class="n">input</span><span class="p">.</span><span class="nf">IndexOf</span><span class="p">(</span><span class="sc">' '</span><span class="p">);</span>
+                            <span class="kt">var</span> <span class="n">target</span> <span class="p">=</span> <span class="n">input</span><span class="p">.</span><span class="nf">Substring</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="n">index</span> <span class="p">-</span> <span class="m">1</span><span class="p">);</span>
+                            <span class="kt">var</span> <span class="n">msg</span> <span class="p">=</span> <span class="n">input</span><span class="p">.</span><span class="nf">Substring</span><span class="p">(</span><span class="n">index</span> <span class="p">+</span> <span class="m">1</span><span class="p">);</span>
+                            <span class="nf">SendPrivateMsg</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">msg</span><span class="p">);</span>
+                        <span class="p">}</span>
+                        <span class="k">else</span>
+                        <span class="p">{</span>
+                            <span class="nf">SendPublicMsg</span><span class="p">(</span><span class="n">input</span><span class="p">);</span>
+                        <span class="p">}</span>
+                        <span class="k">break</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="n">channel</span><span class="p">.</span><span class="nf">Close</span><span class="p">();</span>
+            <span class="n">connection</span><span class="p">.</span><span class="nf">Close</span><span class="p">();</span>
+        <span class="p">}</span>
+
+        <span class="k">private</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">DeclarePublicChannel</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="c1">//定义一个Direct类型交换机</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">ExchangeDeclare</span><span class="p">(</span><span class="n">exchangeName</span><span class="p">,</span> <span class="n">ExchangeType</span><span class="p">.</span><span class="n">Fanout</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="k">null</span><span class="p">);</span>
+
+            <span class="c1">//定义队列1</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">QueueDeclare</span><span class="p">(</span><span class="n">queueName</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="k">null</span><span class="p">);</span>
+
+            <span class="n">channel</span><span class="p">.</span><span class="nf">QueueBind</span><span class="p">(</span><span class="n">queueName</span><span class="p">,</span> <span class="n">exchangeName</span><span class="p">,</span> <span class="n">routeKey</span><span class="p">);</span>
+
+            <span class="c1">//生成两个队列的消费者</span>
+            <span class="c1">//事件基本消费者</span>
+            <span class="n">EventingBasicConsumer</span> <span class="n">consumer</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">EventingBasicConsumer</span><span class="p">(</span><span class="n">channel</span><span class="p">);</span>
+
+            <span class="c1">//接收到消息事件</span>
+            <span class="n">consumer</span><span class="p">.</span><span class="n">Received</span> <span class="p">+=</span> <span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">ea</span><span class="p">)</span> <span class="p">=&gt;</span>
+            <span class="p">{</span>
+                <span class="kt">var</span> <span class="n">message</span> <span class="p">=</span> <span class="n">Encoding</span><span class="p">.</span><span class="n">UTF8</span><span class="p">.</span><span class="nf">GetString</span><span class="p">(</span><span class="n">ea</span><span class="p">.</span><span class="n">Body</span><span class="p">.</span><span class="nf">ToArray</span><span class="p">());</span>
+
+                <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">message</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+                <span class="c1">//确认该消息已被消费</span>
+                <span class="n">channel</span><span class="p">.</span><span class="nf">BasicAck</span><span class="p">(</span><span class="n">ea</span><span class="p">.</span><span class="n">DeliveryTag</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+            <span class="p">};</span>
+            <span class="c1">//启动消费者 设置为手动应答消息</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">BasicConsume</span><span class="p">(</span><span class="n">queueName</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="n">consumer</span><span class="p">);</span>
+        <span class="p">}</span>
+        
+        <span class="k">private</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">DeclarePrivateChannel</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">privateQueueName</span> <span class="p">=</span> <span class="n">user</span><span class="p">;</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">QueueDeclare</span><span class="p">(</span><span class="n">privateQueueName</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="k">false</span><span class="p">,</span> <span class="k">null</span><span class="p">);</span>
+            <span class="n">EventingBasicConsumer</span> <span class="n">consumer</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">EventingBasicConsumer</span><span class="p">(</span><span class="n">channel</span><span class="p">);</span>
+            <span class="n">consumer</span><span class="p">.</span><span class="n">Received</span> <span class="p">+=</span> <span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">ea</span><span class="p">)</span> <span class="p">=&gt;</span>
+            <span class="p">{</span>
+                <span class="kt">var</span> <span class="n">message</span> <span class="p">=</span> <span class="n">Encoding</span><span class="p">.</span><span class="n">UTF8</span><span class="p">.</span><span class="nf">GetString</span><span class="p">(</span><span class="n">ea</span><span class="p">.</span><span class="n">Body</span><span class="p">.</span><span class="nf">ToArray</span><span class="p">());</span>
+                <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">message</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+            <span class="p">};</span>
+            <span class="c1">//启动消费者 设置为手动应答消息</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">BasicConsume</span><span class="p">(</span><span class="n">privateQueueName</span><span class="p">,</span> <span class="k">true</span><span class="p">,</span> <span class="n">consumer</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">private</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Exit</span><span class="p">()</span>
+        <span class="p">{</span>
+            <span class="c1">//将队列绑定到交换机</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">QueueUnbind</span><span class="p">(</span><span class="n">queueName</span><span class="p">,</span> <span class="n">exchangeName</span><span class="p">,</span> <span class="n">routeKey</span><span class="p">,</span> <span class="k">null</span><span class="p">);</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">QueueDelete</span><span class="p">(</span><span class="n">queueName</span><span class="p">);</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">QueueDelete</span><span class="p">(</span><span class="n">user</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">private</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">SendPublicMsg</span><span class="p">(</span><span class="kt">string</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">properties</span> <span class="p">=</span> <span class="n">channel</span><span class="p">.</span><span class="nf">CreateBasicProperties</span><span class="p">();</span>
+            <span class="n">properties</span><span class="p">.</span><span class="n">Expiration</span> <span class="p">=</span> <span class="s">"10000"</span><span class="p">;</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">BasicPublish</span><span class="p">(</span><span class="n">exchangeName</span><span class="p">,</span> <span class="n">routeKey</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">Encoding</span><span class="p">.</span><span class="n">UTF8</span><span class="p">.</span><span class="nf">GetBytes</span><span class="p">(</span><span class="n">user</span> <span class="p">+</span> <span class="s">": "</span> <span class="p">+</span> <span class="n">msg</span><span class="p">));</span>
+        <span class="p">}</span>
+
+        <span class="k">private</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">SendPrivateMsg</span><span class="p">(</span><span class="n">String</span> <span class="n">target</span><span class="p">,</span> <span class="n">String</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">channel</span><span class="p">.</span><span class="nf">BasicPublish</span><span class="p">(</span><span class="s">""</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="k">null</span><span class="p">,</span> <span class="n">Encoding</span><span class="p">.</span><span class="n">UTF8</span><span class="p">.</span><span class="nf">GetBytes</span><span class="p">(</span><span class="n">user</span> <span class="p">+</span> <span class="s">": "</span> <span class="p">+</span> <span class="n">msg</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>运行结果</p>
+
+<p><img src="/images/mq/mq.bmp" alt="结果展示" /></p>
+
+<p>私聊通过路由来实现。每个用户都会创建一个队列，以用户名命名队列名。消息发送者通过指定路由发送给特定消息队列处理</p>
+
+<p>公共聊天通过消息广播的形式（fanout），发送给每个注册到exchange上的队列</p>
+
+<p>公共聊天设置了消息过期时间</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">properties</span> <span class="p">=</span> <span class="n">channel</span><span class="p">.</span><span class="nf">CreateBasicProperties</span><span class="p">();</span>
+<span class="n">properties</span><span class="p">.</span><span class="n">Expiration</span> <span class="p">=</span> <span class="s">"10000"</span><span class="p">;</span>
+<span class="n">channel</span><span class="p">.</span><span class="nf">BasicPublish</span><span class="p">(</span><span class="n">exchangeName</span><span class="p">,</span> <span class="n">routeKey</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">Encoding</span><span class="p">.</span><span class="n">UTF8</span><span class="p">.</span><span class="nf">GetBytes</span><span class="p">(</span><span class="n">user</span> <span class="p">+</span> <span class="s">": "</span> <span class="p">+</span> <span class="n">msg</span><span class="p">));</span>
+</code></pre></div></div>
+<p>Expiration的单位为毫秒。超过10秒未被处理的消息将被删除</p>
+
+<p>公共消息消费完后，手动通知broker移除队列中的消息：</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">channel</span><span class="p">.</span><span class="nf">BasicAck</span><span class="p">(</span><span class="n">ea</span><span class="p">.</span><span class="n">DeliveryTag</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>其中第二个参数multiple，为true时表示之前的消息批量处理为完毕，为false时表示只对当前消息设置成功处理。BasicAck的更多参数说明可以参考<a href="https://www.jianshu.com/p/c25444c027c1">RabbitMQ消息可靠投递及消费机制</a></p>
+<h1 id="参考资料">参考资料</h1>
+<p><a href="https://mp.weixin.qq.com/s?__biz=MzIwMDM3MjcxOQ==&amp;mid=2458772826&amp;idx=1&amp;sn=9f46b3dd3384c17851a054e7bd2c0868&amp;chksm=81877ddab6f0f4ccd32db9d3daf608724133db673626a140b1efa971170cf96d3699c0780691&amp;scene=21#wechat_redirect">RabbitMQ 知多少</a></p>
+
+<p><a href="https://www.jianshu.com/p/c25444c027c1">RabbitMQ消息可靠投递及消费机制</a></p>
+
+
+                <hr style="visibility: hidden;">
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/eshop/2021/04/10/ef/" data-toggle="tooltip" data-placement="top" title="EF Core">
+                        Previous<br>
+                        <span>EF Core</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/eshop/2021/04/14/protobuf/" data-toggle="tooltip" data-placement="top" title="ProtoBuf">
+                        Next<br>
+                        <span>ProtoBuf</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>  
+
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://blog.csdn.net/hackmind">武龙飞旧博客</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "xiaoy-github-io";
+    var disqus_identifier = "/eshop/2021/04/12/rabbitMq";
+    var disqus_url = "https://operhero.github.io/eshop/2021/04/12/rabbitMq/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/operhero">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+
+
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/operhero">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Focus Pixel 2021
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- Service Worker -->
+
+<script type="text/javascript">
+    if(navigator.serviceWorker){
+        // For security reasons, a service worker can only control the pages that are in the same directory level or below it. That's why we put sw.js at ROOT level.
+        navigator.serviceWorker
+            .register('/sw.js')
+            .then((registration) => {console.log('Service Worker Registered. ', registration)})
+            .catch((error) => {console.log('ServiceWorker registration failed: ', error)})
+    }
+</script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/ 
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers   
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async('/js/jquery.tagcloud.js',function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+<script>
+    // dynamic User by Hux
+    var _gaId = '';
+    var _gaDomain = '';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

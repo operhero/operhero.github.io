@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="一个游戏开发人员">
+    <meta name="keywords"  content="戚骏，个人博客， 游戏程序员">
+    <meta name="theme-color" content="#000000">
+    
+    <title>Polly - 服务器 | 游戏| 戚骏</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://operhero.github.io/eshop/2021/04/02/polly/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script type="text/x-mathjax-config"> MathJax.Hub.Config({ TeX: { equationNumbers: { autoNumber: "all" } } }); </script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+           tex2jax: {
+             inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+             processEscapes: true
+           }
+         });
+    </script>
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Focus Pixel</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/about/">About</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/portfolio/">Portfolio</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/tags/">Tags</a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        position: relative;
+        background-image: url('/')
+    }
+
+    
+</style>
+<header class="intro-header" >
+    <div class="header-mask"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                    </div>
+                    <h1>Polly</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by Focus Pixel on April 2, 2021</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<p>提供重试、断路、超时、故障恢复等策略方法库</p>
+
+<h2 id="重试策略retry">重试策略（Retry）</h2>
+<p>重试策略针对的前置条件是短暂的故障延迟且在短暂的延迟之后能够自我纠正</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="kt">int</span> <span class="nf">Compute</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">a</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+    <span class="k">return</span> <span class="m">1</span> <span class="p">/</span> <span class="n">a</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">retryTwoTimesPolicy</span> <span class="p">=</span>
+        <span class="n">Policy</span>
+            <span class="p">.</span><span class="n">Handle</span><span class="p">&lt;</span><span class="n">DivideByZeroException</span><span class="p">&gt;()</span>
+            <span class="p">.</span><span class="nf">Retry</span><span class="p">(</span><span class="m">3</span><span class="p">,</span> <span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span> <span class="p">=&gt;</span>
+            <span class="p">{</span>
+                <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">"执行失败! 重试次数 {0}"</span><span class="p">,</span> <span class="n">count</span><span class="p">);</span>
+                <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">"异常来自 {0}"</span><span class="p">,</span> <span class="n">ex</span><span class="p">.</span><span class="nf">GetType</span><span class="p">().</span><span class="n">Name</span><span class="p">);</span>
+            <span class="p">});</span>
+    <span class="n">retryTwoTimesPolicy</span><span class="p">.</span><span class="nf">Execute</span><span class="p">(()</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="nf">Compute</span><span class="p">();</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>控制台输出：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>执行失败! 重试次数 1
+异常来自 DivideByZeroException
+执行失败! 重试次数 2
+异常来自 DivideByZeroException
+执行失败! 重试次数 3
+异常来自 DivideByZeroException
+Unhandled exception. System.DivideByZeroException: Attempted to divide by zero.
+   at Test2.Program.Compute() in D:\Test2\Test2\Program.cs:line 144
+   at Test2.Program.&lt;&gt;c.&lt;Main&gt;b__2_1() in D:\Test2\Test2\Program.cs:line 159
+   at Polly.Policy.&lt;&gt;c__DisplayClass108_0.&lt;Execute&gt;b__0(Context ctx, CancellationToken ct)
+   at Polly.Policy.&lt;&gt;c__DisplayClass138_0.&lt;Implementation&gt;b__0(Context ctx, CancellationToken token)
+   at Polly.Retry.RetryEngine.Implementation[TResult](Func`3 action, Context context, CancellationToken cancellationToken, ExceptionPredicates shouldRetryExceptionPredicates, ResultPredicates`1 shouldRetryResultPredicates, Action`4 onRetry, Int32 permittedRetryCount, IEnumerable`1 sleepDurationsEnumerable, Func`4 sleepDurationProvider)
+   at Polly.Retry.RetryPolicy.Implementation[TResult](Func`3 action, Context context, CancellationToken cancellationToken)
+   at Polly.Policy.Implementation(Action`2 action, Context context, CancellationToken cancellationToken)
+   at Polly.Policy.Execute(Action`2 action, Context context, CancellationToken cancellationToken)
+   at Polly.Policy.Execute(Action action)
+   at Test2.Program.Main(String[] args) in D:\Test2\Test2\Program.cs:line 157
+</code></pre></div></div>
+<p>重试三次之后，最终会抛出异常</p>
+
+<p>当然，可指定每次重试之间等待的时间间隔</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="kt">int</span> <span class="nf">Compute</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">a</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+    <span class="k">return</span> <span class="m">1</span> <span class="p">/</span> <span class="n">a</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="k">void</span> <span class="nf">ReportaError</span><span class="p">(</span><span class="n">Exception</span> <span class="n">e</span><span class="p">,</span> <span class="n">TimeSpan</span> <span class="n">tiempo</span><span class="p">,</span> <span class="kt">int</span> <span class="n">intento</span><span class="p">,</span> <span class="n">Context</span> <span class="n">contexto</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"异常: </span><span class="p">{</span><span class="n">intento</span><span class="p">:</span><span class="m">00</span><span class="p">}</span><span class="s"> (调用秒数: </span><span class="p">{</span><span class="n">tiempo</span><span class="p">.</span><span class="n">Seconds</span><span class="p">}</span><span class="s"> 秒)\t执行时间: </span><span class="p">{</span><span class="n">DateTime</span><span class="p">.</span><span class="n">Now</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">politicaWaitAndRetry</span> <span class="p">=</span> <span class="n">Policy</span>
+        <span class="p">.</span><span class="n">Handle</span><span class="p">&lt;</span><span class="n">DivideByZeroException</span><span class="p">&gt;()</span>
+        <span class="p">.</span><span class="nf">WaitAndRetry</span><span class="p">(</span><span class="k">new</span><span class="p">[]</span>
+        <span class="p">{</span>
+            <span class="n">TimeSpan</span><span class="p">.</span><span class="nf">FromSeconds</span><span class="p">(</span><span class="m">1</span><span class="p">),</span>
+            <span class="n">TimeSpan</span><span class="p">.</span><span class="nf">FromSeconds</span><span class="p">(</span><span class="m">3</span><span class="p">),</span>
+            <span class="n">TimeSpan</span><span class="p">.</span><span class="nf">FromSeconds</span><span class="p">(</span><span class="m">5</span><span class="p">),</span>
+            <span class="n">TimeSpan</span><span class="p">.</span><span class="nf">FromSeconds</span><span class="p">(</span><span class="m">7</span><span class="p">)</span>
+        <span class="p">},</span> <span class="n">ReportaError</span><span class="p">);</span>
+    <span class="n">politicaWaitAndRetry</span><span class="p">.</span><span class="nf">Execute</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="p">{</span> <span class="nf">Compute</span><span class="p">();</span> <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="回退策略fallback">回退策略（Fallback）</h2>
+<p>回退策略意在定义失败时返回的结果</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="kt">int</span> <span class="nf">Compute</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">a</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+    <span class="k">return</span> <span class="m">1</span> <span class="p">/</span> <span class="n">a</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">fallBackPolicy</span> <span class="p">=</span>
+        <span class="n">Policy</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span>
+            <span class="p">.</span><span class="n">Handle</span><span class="p">&lt;</span><span class="n">DivideByZeroException</span><span class="p">&gt;()</span>
+            <span class="p">.</span><span class="n">Fallback</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;(-</span><span class="m">1</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">res</span> <span class="p">=</span> <span class="n">fallBackPolicy</span><span class="p">.</span><span class="nf">Execute</span><span class="p">(</span><span class="n">Compute</span><span class="p">);</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"result is </span><span class="p">{</span><span class="n">res</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>控制台输出</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>result is -1
+</code></pre></div></div>
+
+<h2 id="包装策略policywrap">包装策略（PolicyWrap）</h2>
+<p>包装策略针对的前置条件是不同的故障需要不同的策略</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="kt">string</span> <span class="nf">ThrowException</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nf">Exception</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">fallBackPolicy</span> <span class="p">=</span>
+        <span class="n">Policy</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;</span>
+            <span class="p">.</span><span class="n">Handle</span><span class="p">&lt;</span><span class="n">Exception</span><span class="p">&gt;()</span>
+            <span class="p">.</span><span class="nf">Fallback</span><span class="p">(</span><span class="s">"执行失败，返回Fallback"</span><span class="p">);</span>
+
+    <span class="kt">var</span> <span class="n">fallBack</span> <span class="p">=</span> <span class="n">fallBackPolicy</span><span class="p">.</span><span class="nf">Execute</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="p">{</span> <span class="k">return</span> <span class="nf">ThrowException</span><span class="p">();</span> <span class="p">});</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">fallBack</span><span class="p">);</span>
+
+    <span class="kt">var</span> <span class="n">politicaWaitAndRetry</span> <span class="p">=</span>
+        <span class="n">Policy</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;</span>
+            <span class="p">.</span><span class="n">Handle</span><span class="p">&lt;</span><span class="n">Exception</span><span class="p">&gt;()</span>
+            <span class="p">.</span><span class="nf">Retry</span><span class="p">(</span><span class="m">3</span><span class="p">,</span> <span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span> <span class="p">=&gt;</span>
+            <span class="p">{</span>
+                <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">"执行失败! 重试次数 {0}"</span><span class="p">,</span> <span class="n">count</span><span class="p">);</span>
+                <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">"异常来自 {0}"</span><span class="p">,</span> <span class="n">ex</span><span class="p">.</span><span class="nf">GetType</span><span class="p">().</span><span class="n">Name</span><span class="p">);</span>
+            <span class="p">});</span>
+
+    <span class="kt">var</span> <span class="n">mixedPolicy</span> <span class="p">=</span> <span class="n">Policy</span><span class="p">.</span><span class="nf">Wrap</span><span class="p">(</span><span class="n">fallBackPolicy</span><span class="p">,</span> <span class="n">politicaWaitAndRetry</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">mixedResult</span> <span class="p">=</span> <span class="n">mixedPolicy</span><span class="p">.</span><span class="nf">Execute</span><span class="p">(</span><span class="n">ThrowException</span><span class="p">);</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"执行结果: </span><span class="p">{</span><span class="n">mixedResult</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="异常">异常</h2>
+<h3 id="--捕获多个异常">- 捕获多个异常</h3>
+<p>当有多个异常类型时，通过OR声明</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Policy</span>
+  <span class="p">.</span><span class="n">Handle</span><span class="p">&lt;</span><span class="n">DivideByZeroException</span><span class="p">&gt;()</span>
+  <span class="p">.</span><span class="n">Or</span><span class="p">&lt;</span><span class="n">ArgumentException</span><span class="p">&gt;()</span>
+</code></pre></div></div>
+<h3 id="--策略条件">- 策略条件</h3>
+<p>除了异常，Polly还支持对结果进行性条件定义</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="kt">int</span> <span class="nf">Compute</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="m">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">policy</span> <span class="p">=</span>
+        <span class="n">Policy</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span>
+            <span class="p">.</span><span class="nf">HandleResult</span><span class="p">(</span><span class="n">r</span><span class="p">=&gt;</span><span class="n">r</span><span class="p">==</span><span class="m">0</span><span class="p">)</span>
+            <span class="p">.</span><span class="nf">OrResult</span><span class="p">(</span><span class="n">r</span><span class="p">=&gt;</span><span class="n">r</span><span class="p">==</span><span class="m">1</span><span class="p">)</span>
+            <span class="p">.</span><span class="nf">Retry</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span> <span class="p">=&gt;</span>
+            <span class="p">{</span>
+                <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"重试: </span><span class="p">{</span><span class="n">count</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+            <span class="p">});</span>
+    <span class="kt">var</span> <span class="n">r</span> <span class="p">=</span> <span class="n">policy</span><span class="p">.</span><span class="nf">Execute</span><span class="p">(</span><span class="n">Compute</span><span class="p">);</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"result: </span><span class="p">{</span><span class="n">r</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>控制台输出</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>重试: 1
+result: 0
+</code></pre></div></div>
+<p>当结果为0或者1时，尝试重试</p>
+
+
+                <hr style="visibility: hidden;">
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/linux/2021/02/24/%E5%A4%9A%E4%B8%AA%E8%B7%AF%E5%BE%84%E4%B8%8B%E7%9A%84%E6%96%87%E4%BB%B6%E5%A4%87%E4%BB%BD/" data-toggle="tooltip" data-placement="top" title="多个路径下的文件备份">
+                        Previous<br>
+                        <span>多个路径下的文件备份</span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="next">
+                        <a href="/eshop/2021/04/06/oauth2/" data-toggle="tooltip" data-placement="top" title="OAuth2">
+                        Next<br>
+                        <span>OAuth2</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>  
+
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://blog.csdn.net/hackmind">武龙飞旧博客</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "xiaoy-github-io";
+    var disqus_identifier = "/eshop/2021/04/02/polly";
+    var disqus_url = "https://operhero.github.io/eshop/2021/04/02/polly/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/operhero">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+
+
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/operhero">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Focus Pixel 2021
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- Service Worker -->
+
+<script type="text/javascript">
+    if(navigator.serviceWorker){
+        // For security reasons, a service worker can only control the pages that are in the same directory level or below it. That's why we put sw.js at ROOT level.
+        navigator.serviceWorker
+            .register('/sw.js')
+            .then((registration) => {console.log('Service Worker Registered. ', registration)})
+            .catch((error) => {console.log('ServiceWorker registration failed: ', error)})
+    }
+</script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/ 
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers   
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async('/js/jquery.tagcloud.js',function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+<script>
+    // dynamic User by Hux
+    var _gaId = '';
+    var _gaDomain = '';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

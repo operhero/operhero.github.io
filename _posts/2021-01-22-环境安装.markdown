@@ -1,10 +1,10 @@
 ---
 layout: post
-author: operhero
 title:  "环境安装"
-date:   2021-01-22 15:41:19 +0800
-categories: [linux]
-tags: [软件安装]
+subtitle:   "" 
+date:   2021-01-22
+tags:
+    - linux
 ---
 1、安装dotnetcore
 
