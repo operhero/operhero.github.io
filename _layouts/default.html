@@ -1,51 +1,21 @@
----
-layout: compress
-# Default layout
----
-
 <!DOCTYPE html>
+<html lang="en">
 
-{% capture prefer_mode %}
-  {% if site.theme_mode %}
-    mode="{{ site.theme_mode }}"
-  {% endif %}
-{% endcapture %}
+{% include head.html %}
 
-<html lang="{{ site.lang | default: "en-US" }}" {{ prefer_mode }}>
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
 
-  {% include head.html %}
+    {% include nav.html %}
 
-  <body data-spy="scroll" data-target="#toc">
+    {{ content }}
 
-    {% include sidebar.html %}
+    {% include footer.html %}
 
-    {% include topbar.html %}
 
-    <div id="main-wrapper">
-      <div id="main">
+<!-- Image to hack wechat -->
+<!-- Migrate from head to bottom, no longer block render and still work -->
 
-        {% include refactor-content.html content=content %}
-
-        {% include footer.html %}
-
-      </div>
-
-      {% include search-results.html %}
-
-    </div> <!-- #main-wrapper -->
-
-    {% if page.mermaid %}
-      {% include mermaid.html %}
-    {% endif %}
-
-    <div id="mask"></div>
-
-    <a id="back-to-top" href="#" aria-label="back-to-top" class="btn btn-lg btn-box-shadow" role="button">
-      <i class="fas fa-angle-up"></i>
-    </a>
-
-    {% include search-loader.html %}
-
-  </body>
+</body>
 
 </html>
