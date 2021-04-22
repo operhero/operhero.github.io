@@ -1,0 +1,126 @@
+I"�<h1 id="基础概念">基础概念</h1>
+<p>X.509证书包含三个文件：key，csr，crt。</p>
+
+<blockquote>
+  <p>key是服务器上的私钥文件，用于对发送给客户端数据的加密，以及对从客户端接收到数据的解密
+csr是证书签名请求文件，用于提交给证书颁发机构（CA）对证书签名
+crt是由证书颁发机构（CA）签名后的证书，或者是开发者自签名的证书，包含证书持有人的信息，持有人的公钥，以及签署者的签名等信息</p>
+</blockquote>
+
+<h1 id="安装openssl">安装openssl</h1>
+<ul>
+  <li>下载	<a href="http://slproweb.com/products/Win32OpenSSL.html">Win64 OpenSSL v1.1.1k</a>，选择msi文件直接安装。我安装到了D盘</li>
+  <li>添加D:\OpenSSL-Win64\bin到path环境变量</li>
+</ul>
+
+<h1 id="自签私有证书">自签私有证书</h1>
+
+<p>生成私钥：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>openssl genrsa -out ca.key 2048
+</code></pre></div></div>
+
+<p>生成rsa私钥，des3算法，2048位强度，ca.key是秘钥文件名。</p>
+
+<p>生成证书签名请求：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>openssl req -new -key ca.key -out ca.csr
+</code></pre></div></div>
+
+<p>输入一些基本信息</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Country Name (2 letter code) [AU]:CN
+State or Province Name (full name) [Some-State]:Shanghai
+Locality Name (eg, city) []:Shanghai
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:operhero
+Organizational Unit Name (eg, section) []:operhero
+Common Name (e.g. server FQDN or YOUR name) []:operhero
+Email Address []:648795307@qq.com
+
+Please enter the following 'extra' attributes
+to be sent with your certificate request
+A challenge password []:
+An optional company name []:operhero
+</code></pre></div></div>
+
+<p><strong>注意这里的A challenge password [],直接按了回车，也就是不设置密码。这在后文中转换成p12证书时会用到</strong></p>
+
+<p>自签名证书：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>openssl x509 -req -days 3650 -sha256 -extfile D:\OpenSSL-Win64\bin\openssl.cfg -extensions v3_req -in ca.csr -signkey ca.key -out ca.crt
+</code></pre></div></div>
+
+<p>可以看到生成的三个文件：ca.key、ca.csr.ca.crt</p>
+
+<p>将私钥和证书文件复制到Apache的配置目录下即可</p>
+
+<p>以上步骤可以用一条命令执行完成：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>openssl req -new -x509 -keyout ca.key -out ca.cer -days 3650 -config openssl.cnf
+</code></pre></div></div>
+<p>req命令表示创建证书，new参数表示创建私钥而不是从已存在的文件中读取，nodes参数表示不加密私钥。如果不添加nodes参数，以后每次使用私钥时都必须输入密码（如Apache每次重启）
+openssl.cnf在openssl压缩包的share目录下
+输入证书信息时，Country Name填入CN，Common Name输入单位名称，即最后显示的颁发者</p>
+
+<h1 id="私有ca认证">私有CA认证</h1>
+<p>私有CA就是自己创建一个CA根证书代替权威CA机构，然后用私有的根证书签发客户端证书</p>
+
+<h1 id="springboot配置ssl">SpringBoot配置ssl</h1>
+<p><a href="https://www.jianshu.com/p/eb52e0f5ee85?tdsourcetag=s_pctim_aiomsg">springboot配置ssl的参考博客</a></p>
+
+<p>SpringBoot支持jks和pks12格式的证书，具体的证书格式说明参考<a href="https://blog.csdn.net/qq_22763255/article/details/105526429">这里</a></p>
+
+<p>生成jks</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>keytool -genkey -alias localhost -keyalg RSA -keysize 2048 -sigalg SHA256withRSA -keystore localhost.jks -dname CN=localhost,OU=Test,O=pkslow,L=Guangzhou,C=CN -validity 731 -storepass changeit -keypass changeit
+</code></pre></div></div>
+
+<p>配置如下：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>server.port=443
+
+server.ssl.enabled=true
+server.ssl.key-store-type=jks
+server.ssl.key-store=classpath:localhost.jks
+server.ssl.key-store-password=changeit
+server.ssl.key-alias=localhost
+</code></pre></div></div>
+
+<p>生成PKS12</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>keytool -genkey -alias localhost -keyalg RSA -keysize 2048 -sigalg SHA256withRSA -storetype PKCS12 -keystore localhost.p12 -dname CN=localhost,OU=Test,O=pkslow,L=Guangzhou,C=CN -validity 731 -storepass changeit -keypass changeit
+</code></pre></div></div>
+
+<p>配置如下：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>server.port=443
+
+server.ssl.enabled=true
+server.ssl.key-store-type=PKCS12
+server.ssl.key-store=classpath:localhost.p12
+server.ssl.key-store-password=changeit
+server.ssl.key-alias=localhost
+</code></pre></div></div>
+
+<p>运行会报错</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java.lang.UnsatisfiedLinkError: org.apache.tomcat.jni.SSL.renegotiatePending(J)I
+	at org.apache.tomcat.jni.SSL.renegotiatePending(Native Method) ~[tomcat-embed-core-9.0.45.jar:9.0.45]
+	at org.apache.tomcat.util.net.openssl.OpenSSLEngine.getHandshakeStatus(OpenSSLEngine.java:1068) ~[tomcat-embed-core-9.0.45.jar:9.0.45]
+	at org.apache.tomcat.util.net.openssl.OpenSSLEngine.wrap(OpenSSLEngine.java:475) ~[tomcat-embed-core-9.0.45.jar:9.0.45]
+	at javax.net.ssl.SSLEngine.wrap(SSLEngine.java:469) ~[na:1.8.0_101]
+	at org.apache.tomcat.util.net.SecureNioChannel.handshakeWrap(SecureNioChannel.java:472) ~[tomcat-embed-core-9.0.45.jar:9.0.45]
+	at org.apache.tomcat.util.net.SecureNioChannel.handshake(SecureNioChannel.java:216) ~[tomcat-embed-core-9.0.45.jar:9.0.45]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1685) ~[tomcat-embed-core-9.0.45.jar:9.0.45]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:49) [tomcat-embed-core-9.0.45.jar:9.0.45]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142) [na:1.8.0_101]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) [na:1.8.0_101]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) [tomcat-embed-core-9.0.45.jar:9.0.45]
+	at java.lang.Thread.run(Thread.java:745) [na:1.8.0_101]
+</code></pre></div></div>
+
+<p><a href="https://www.pianshen.com/article/42131201927/">报错修复参考</a>，降低了tomcat的版本，来规避错误</p>
+
+<p>crt转为p12证书</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>openssl pkcs12 -export -in ca.crt -inkey ca.key -out localhost.p12 -name "localhost"
+</code></pre></div></div>
+
+<p>注意修改配置文件：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>server.ssl.key-store-password=
+</code></pre></div></div>
+
+<p><strong>这是因为前边提到的，生成ca.csr没有设置密码，所以这里也没有密码</strong></p>
+:ET
