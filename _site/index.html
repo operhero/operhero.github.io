@@ -192,8 +192,330 @@
                 postlist-container
             ">
     			
+<div class="post-preview">
+    <a href="/2021/04/23/dotnetty/">
+        <h2 class="post-title">
+            DotNetty
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            下载demo
+克隆github项目
+git clone git@github.com:Azure/DotNetty.git
+
+
+Handler与ChildHandler
+
+  Handler方法由AbstractBootstrap提供，在初始化时执行
+  ChildHandler方法由ServerBootstrap提供，而ServerBootstrap继承自AbstractBootstrap...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by operhero on April 23, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/21/ssl/">
+        <h2 class="post-title">
+            SSL
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            基础概念
+SSL证书一般安装在服务器上，而主流的Web服务软件，通常都基于两种基础密码库：OpenSSL和Java
+
+Tomcat、Weblogic、JBoss等系统是使用Java提供的密码库。通过Java的Keytool工具，生成Java Keystore（JKS）格式的证书文件。
+
+而Apache、Nginx等，使用OpenSSL提供的密码库，生成PEM、KEY、CRT等格式的证书文件。...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by 戚骏 on April 21, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/14/protobuf/">
+        <h2 class="post-title">
+            ProtoBuf
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            安装
+github下载protoc-3.15.8-win64.zip
+
+解压后，将/protoc-3.15.8-win64/bin所在目录添加到环境变量
+
+Demo
+
+
+  新建一个myproto.proto文件，内容如下：
+
+
+syntax = "proto3";
+package my;
+
+message pb_team_info {
+    string team_id = 1;
+   ...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by 戚骏 on April 14, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/14/grpc/">
+        <h2 class="post-title">
+            GRPC
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            项目添加引用
+Install-Package Grpc
+Install-Package Google.Protobuf
+Install-Package Grpc.Tools
+
+
+定义helloworld.proto
+syntax = "proto3";
+package gRPCDemo;
+service gRPC {
+  rpc SayHello (HelloRequest) returns...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by 戚骏 on April 14, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/12/rabbitMq/">
+        <h2 class="post-title">
+            Rabbit MQ
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            Windows环境安装
+
+
+  
+    安装Erlang运行环境 下载安装Erlang：http://www.erlang.org/downloads。
+  
+  
+    安装RabbitMQ 下载安装Windows版本的RabbitMQ：http://www.rabbitmq.com/install-windows.html。
+  
+  
+    启动RabbitMQ Server 点...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by 戚骏 on April 12, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/10/ef/">
+        <h2 class="post-title">
+            EF Core
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            visual studio 2019 新建 .Net Core 3.1 Console工程
+
+添加程序包：
+Microsoft.EntityFrameworkCore.Tools version:3.1.14
+Microsoft.EntityFrameworkCore.Design version:3.1.14
+Pomelo.EntityFrameworkCore.MySql version...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by 戚骏 on April 10, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/02/oauth2/">
+        <h2 class="post-title">
+            OAuth2
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            OAuth2.0定义了授权机制，用来授权第三方应用，获取用户数据。
+
+比如登录网站后，跳转到github授权，网站就可以使用github的用户数据用户数据了。# OAuth2.0四种授权方式
+
+
+  授权码
+
+
+这种方式是最常用的流程，安全性也最高。
+
+  A网站向用户提供B网站跳转链接，请求授权码，此时传递参数：应用id（client_id）、回调地址(redirect_uri)和授权范围...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by 戚骏 on April 2, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/04/02/polly/">
+        <h2 class="post-title">
+            Polly
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            提供重试、断路、超时、故障恢复等策略方法库
+
+重试策略（Retry）
+重试策略针对的前置条件是短暂的故障延迟且在短暂的延迟之后能够自我纠正
+static int Compute()
+{
+    var a = 0;
+    return 1 / a;
+}
+
+static void Main(string[] args)
+{
+    var retryTwoTimesPolicy =
+    ...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by 戚骏 on April 2, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/02/24/%E5%A4%9A%E4%B8%AA%E8%B7%AF%E5%BE%84%E4%B8%8B%E7%9A%84%E6%96%87%E4%BB%B6%E5%A4%87%E4%BB%BD/">
+        <h2 class="post-title">
+            多个路径下的文件备份
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+  
+    问题描述：
+
+    日志服务器按目录记录了多台服务器的日志
+
+    如2001服的日志存储在/data/log/2001/，文件名为msg.log.year-month-day-hour.log
+
+    现在需要备份/data/log/*/msg.log.2021-02-20*.log,即所有服务器在2月20产生的日志，供紧急问题修复数据
+  
+  
+    一种备份方...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by 戚骏 on February 24, 2021
+    </p>
+</div>
+<hr>
+
+<div class="post-preview">
+    <a href="/2021/01/22/%E8%AE%B0%E4%B8%80%E6%AC%A1%E7%A3%81%E7%9B%98%E5%88%86%E5%8C%BA%E4%B8%8E%E6%8C%82%E8%BD%BD/">
+        <h2 class="post-title">
+            记一次磁盘分区与挂载
+        </h2>
+        
+        <h3 class="post-subtitle">
+            
+        </h3>
+        
+        <div class="post-content-preview">
+            
+  查看磁盘分区情况：
+
+
+	fdisk -l 或 fdisk -f
+
+
+
+  查看文件系统信息：
+
+
+	df -h
+
+
+
+  
+    准备知识一：主分区、逻辑分区与扩展分区的区别
+
+      主分区相当于c盘，扩展分区看不到，是逻辑分区的总和。
+    
+  
+  
+    准备知识二：Linux标准的文件系统 Ext2/Ext3/Ext4/xfs
+  
+  
+    目标： 我们只...
+        </div>
+    </a>
+    <p class="post-meta">
+        Posted by 戚骏 on January 22, 2021
+    </p>
+</div>
+<hr>
+
 
 <!-- Pager -->
+
+<ul class="pager">
+    
+    
+    <li class="next">
+        <a href="/page2">Older Posts &rarr;</a>
+    </li>
+    
+</ul>
 
 
     		</div>
@@ -222,6 +544,8 @@
                                 <a href="/tags/#eShop" title="eShop" rel="7">
                                     eShop
                                 </a>
+                            
+                        
                             
                         
                     </div>

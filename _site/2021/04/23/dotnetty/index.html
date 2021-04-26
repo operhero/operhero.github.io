@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="一个游戏开发人员">
+    <meta name="keywords"  content="戚骏，个人博客， 游戏程序员">
+    <meta name="theme-color" content="#000000">
+    
+    <title>DotNetty - 服务器 | 游戏| 戚骏</title>
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/pwa/manifest.json">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://operhero.github.io/2021/04/23/dotnetty/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script type="text/x-mathjax-config"> MathJax.Hub.Config({ TeX: { equationNumbers: { autoNumber: "all" } } }); </script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+           tex2jax: {
+             inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+             processEscapes: true
+           }
+         });
+    </script>
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">operhero</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/about/">About</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/portfolio/">Portfolio</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/tags/">Tags</a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        position: relative;
+        background-image: url('/')
+    }
+
+    
+</style>
+<header class="intro-header" >
+    <div class="header-mask"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/#DotNetty" title="DotNetty">DotNetty</a>
+                        
+                    </div>
+                    <h1>DotNetty</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by operhero on April 23, 2021</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<h1 id="下载demo">下载demo</h1>
+<p>克隆github项目</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone git@github.com:Azure/DotNetty.git
+</code></pre></div></div>
+
+<h1 id="handler与childhandler">Handler与ChildHandler</h1>
+<ul>
+  <li>Handler方法由AbstractBootstrap提供，在初始化时执行</li>
+  <li>ChildHandler方法由ServerBootstrap提供，而ServerBootstrap继承自AbstractBootstrap，在客户端成功connect后才执行，目的是监听已经连接的客户端的Channel的动作和状态</li>
+</ul>
+
+<h1 id="abstractbootstrap的小技巧">AbstractBootstrap的小技巧</h1>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">abstract</span> <span class="k">class</span> <span class="nc">AbstractBootstrap</span><span class="p">&lt;</span><span class="n">TBootstrap</span><span class="p">,</span> <span class="n">TChannel</span><span class="p">&gt;</span>
+        <span class="k">where</span> <span class="n">TBootstrap</span> <span class="p">:</span> <span class="n">AbstractBootstrap</span><span class="p">&lt;</span><span class="n">TBootstrap</span><span class="p">,</span> <span class="n">TChannel</span><span class="p">&gt;</span>
+        <span class="k">where</span> <span class="n">TChannel</span> <span class="p">:</span> <span class="n">IChannel</span>
+</code></pre></div></div>
+
+<p>虚基类中定义的所有方法，都返回IBootstrap，如：</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">virtual</span> <span class="n">TBootstrap</span> <span class="nf">Group</span><span class="p">(</span><span class="n">IEventLoopGroup</span> <span class="k">group</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">Contract</span><span class="p">.</span><span class="nf">Requires</span><span class="p">(</span><span class="k">group</span> <span class="p">!=</span> <span class="k">null</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="k">group</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">InvalidOperationException</span><span class="p">(</span><span class="s">"group has already been set."</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">this</span><span class="p">.</span><span class="k">group</span> <span class="p">=</span> <span class="k">group</span><span class="p">;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">TBootstrap</span><span class="p">)</span><span class="k">this</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这样的好处，是让继承类的对象能同时调用虚基类方法和子类方法</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">bootstrap</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ServerBootstrap</span><span class="p">();</span>
+<span class="n">bootstrap</span>
+  <span class="p">.</span><span class="nf">Group</span><span class="p">(</span><span class="n">bossGroup</span><span class="p">,</span> <span class="n">workerGroup</span><span class="p">)</span>
+  <span class="p">.</span><span class="n">Channel</span><span class="p">&lt;</span><span class="n">TcpServerSocketChannel</span><span class="p">&gt;()</span>
+  <span class="p">.</span><span class="nf">Option</span><span class="p">(</span><span class="n">ChannelOption</span><span class="p">.</span><span class="n">SoBacklog</span><span class="p">,</span> <span class="m">100</span><span class="p">)</span>
+  <span class="p">.</span><span class="nf">Handler</span><span class="p">(</span><span class="k">new</span> <span class="nf">LoggingHandler</span><span class="p">(</span><span class="s">"LSTN"</span><span class="p">))</span>
+  <span class="p">.</span><span class="nf">ChildHandler</span><span class="p">(</span><span class="k">new</span> <span class="n">ActionChannelInitializer</span><span class="p">&lt;</span><span class="n">ISocketChannel</span><span class="p">&gt;(</span><span class="n">channel</span> <span class="p">=&gt;</span>
+  <span class="p">{</span>
+      <span class="n">IChannelPipeline</span> <span class="n">pipeline</span> <span class="p">=</span> <span class="n">channel</span><span class="p">.</span><span class="n">Pipeline</span><span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">tlsCertificate</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span>
+      <span class="p">{</span>
+          <span class="n">pipeline</span><span class="p">.</span><span class="nf">AddLast</span><span class="p">(</span><span class="n">TlsHandler</span><span class="p">.</span><span class="nf">Server</span><span class="p">(</span><span class="n">tlsCertificate</span><span class="p">));</span>
+      <span class="p">}</span>
+      <span class="n">pipeline</span><span class="p">.</span><span class="nf">AddLast</span><span class="p">(</span><span class="k">new</span> <span class="nf">LoggingHandler</span><span class="p">(</span><span class="s">"CONN"</span><span class="p">));</span>
+      <span class="n">pipeline</span><span class="p">.</span><span class="nf">AddLast</span><span class="p">(</span><span class="k">new</span> <span class="nf">NumberEncoder</span><span class="p">(),</span> <span class="k">new</span> <span class="nf">BigIntegerDecoder</span><span class="p">(),</span> <span class="k">new</span> <span class="nf">FactorialServerHandler</span><span class="p">());</span>
+  <span class="p">}));</span>
+</code></pre></div></div>
+
+<p>Group、Channel、Option、Handler都属于AbstractBootstrap提供的方法，ChildHandler由ServerBootstrap提供</p>
+
+<p>这种技巧叫做Curiously recurring template pattern，参考<a href="https://www.zhihu.com/question/27421302/answer/36573889?utm_source=qq&amp;utm_medium=social&amp;utm_oi=42155812847616">知乎</a></p>
+
+<h1 id="reactor模型">Reactor模型</h1>
+<p>Reactor 模型是基于事件驱动的，有单线程模型、多线程模型和主从多线程模型：</p>
+
+<h3 id="单线程模型">单线程模型</h3>
+<p><img src="/images/dotnetty/1.png" alt="单线程模型" />
+单线程模型指的是所有的 I/O 操作都是在同一个 NIO 线程上面完成, 由于 Reactor 模型使用的是 NIO,I/O 操作不会导致阻塞, 理论上一个线程可以独立处理所有 I/O 相关的操作</p>
+
+<p>从架构层面看, 一个 NIO 线程确实可以完成其承担的职责, 例如通过 Acceptor 类接收客户端的 TCP 连接请求, 链路建立成功后通过 Dispatch 将对应的 ByteBuffer 派发到指定的 Handler 上进行消息处理并响应客户端</p>
+
+<p>但一个 NIO 线程同时处理成百上千的链路, 性能上无法支撑, 即便 NIO 线程的 CPU 符合达到 100%, 也无法满足海量消息处理当负荷后处理速度变慢, 导致大量客户端连接超时, 最终导致大量消息积压和超时且一旦 NIO 线程发生故障则会导致整个通信模块不可用</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">bootstrap</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ServerBootstrap</span><span class="p">();</span>
+<span class="n">bootstrap</span><span class="p">.</span><span class="nf">Group</span><span class="p">(</span> <span class="k">new</span> <span class="nf">MultithreadEventLoopGroup</span><span class="p">(</span><span class="m">1</span><span class="p">))</span>
+</code></pre></div></div>
+
+<h3 id="多线程模型">多线程模型</h3>
+<p><img src="/images/dotnetty/2.png" alt="多线程模型" />
+多线程模型与单线程模型最大区别就是有一组 NIO 线程处理 I/O 操作</p>
+
+<p>有专门一个 NIO 线程 (Acceptor) 用于接收客户端 TCP 连接请求, 读写 I/O 操作由一个 NIO 线程池负责</p>
+
+<p>一个 NIO 线程可以同时处理 N 条链路, 但一个链路只对应一个 NIO 线程, 防止并发操作问题</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">bossGroup</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">MultithreadEventLoopGroup</span><span class="p">(</span><span class="m">1</span><span class="p">);</span>
+<span class="kt">var</span> <span class="n">workerGroup</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">MultithreadEventLoopGroup</span><span class="p">();</span>
+<span class="kt">var</span> <span class="n">bootstrap</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ServerBootstrap</span><span class="p">();</span>
+<span class="n">bootstrap</span><span class="p">.</span><span class="nf">Group</span><span class="p">(</span><span class="n">bossGroup</span><span class="p">,</span> <span class="n">workerGroup</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="主从多线程模型">主从多线程模型</h3>
+<p><img src="/images/dotnetty/3.png" alt="主从线程模型" />
+绝大多数场景下, 多线程模型都可以满足性能需求, 但是再极个别特殊场景中, 一个 NIO 线程处理客户端连接请求可能会存在性能问题, 例如百万客户端连接, 在这种情况下单独一个 Acceptor 线程可能会存在性能问题, 为了解决性能问题, 产生了主从多线程模型</p>
+
+<p>它的特点是: 服务端用于接收客户端连接的不再是单独一个 NIO 线程, 而是一个独立的 NIO 线程池</p>
+
+<p>Acceptor 接收到客户端 TCP 连接请求处理完成后(可能包含接入认证等), 将新创建的 SocketChannel 注册到 I/O 线程池的某个线程上, 由它负责 SocketChannel 的读写和编解码工作</p>
+
+<p>Acceptor 线程池仅仅只用于客户端的登陆握手和安全认证, 由 I/O 线程负责后续的 I/O 操作</p>
+
+<blockquote>
+  <p>DotNetty 没有使用主从多线程模型, 服务器端的 ServerSocketChannel 只绑定到了 bossGroup 中的一个线程, 因此在调用 Java NIO 的 Selector.select 处理客户端的连接请求时, 实际上是在一个线程中的, 所以对只有一个服务的应用来说, bossGroup 设置多个线程是没有什么作用的, 反而还会造成资源浪费</p>
+</blockquote>
+
+<h1 id="multithreadeventloopgroup">MultithreadEventLoopGroup</h1>
+<p>MultithreadEventLoopGroup是上节提到的线程池实现。包含一个IEventLoop数组，通过GetNext()方法顺序获取一个IEventLoop，对外提供IEventExecutor功能</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">override</span> <span class="n">IEventExecutor</span> <span class="nf">GetNext</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">id</span> <span class="p">=</span> <span class="n">Interlocked</span><span class="p">.</span><span class="nf">Increment</span><span class="p">(</span><span class="k">ref</span> <span class="k">this</span><span class="p">.</span><span class="n">requestId</span><span class="p">);</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="n">eventLoops</span><span class="p">[</span><span class="n">Math</span><span class="p">.</span><span class="nf">Abs</span><span class="p">(</span><span class="n">id</span> <span class="p">%</span> <span class="k">this</span><span class="p">.</span><span class="n">eventLoops</span><span class="p">.</span><span class="n">Length</span><span class="p">)];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>先上两张类图：
+<img src="/images/dotnetty/4.png" alt="MultithreadEventLoopGroup" />
+<img src="/images/dotnetty/5.png" alt="SingleThreadEventLoop" /></p>
+
+<p>Dotnetty中没有NioEventLoopGroup类和NioEventLoop类。</p>
+
+<p>这里要说明的是，SingleThreadEventLoop是MultithreadEventLoopGroup中IEventLoop一种默认实现方式，MultithreadEventLoopGroup实际上包含SingleThreadEventLoop数组</p>
+
+<p>另外值得注意的一点是，<strong>EventLoop继承自EventLoopGroup！！！</strong></p>
+
+<p>上节例子中使用MultithreadEventLoopGroup，他有三种缺省构造方法：</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="c1">/// &lt;summary&gt;Creates a new instance of &lt;see cref="MultithreadEventLoopGroup"/&gt;.&lt;/summary&gt;</span>
+<span class="k">public</span> <span class="nf">MultithreadEventLoopGroup</span><span class="p">()</span>
+    <span class="p">:</span> <span class="k">this</span><span class="p">(</span><span class="n">DefaultEventLoopFactory</span><span class="p">,</span> <span class="n">DefaultEventLoopThreadCount</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="p">}</span>
+
+<span class="c1">/// &lt;summary&gt;Creates a new instance of &lt;see cref="MultithreadEventLoopGroup"/&gt;.&lt;/summary&gt;</span>
+<span class="k">public</span> <span class="nf">MultithreadEventLoopGroup</span><span class="p">(</span><span class="kt">int</span> <span class="n">eventLoopCount</span><span class="p">)</span>
+    <span class="p">:</span> <span class="k">this</span><span class="p">(</span><span class="n">DefaultEventLoopFactory</span><span class="p">,</span> <span class="n">eventLoopCount</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="p">}</span>
+
+<span class="c1">/// &lt;summary&gt;Creates a new instance of &lt;see cref="MultithreadEventLoopGroup"/&gt;.&lt;/summary&gt;</span>
+<span class="k">public</span> <span class="nf">MultithreadEventLoopGroup</span><span class="p">(</span><span class="n">Func</span><span class="p">&lt;</span><span class="n">IEventLoopGroup</span><span class="p">,</span> <span class="n">IEventLoop</span><span class="p">&gt;</span> <span class="n">eventLoopFactory</span><span class="p">)</span>
+    <span class="p">:</span> <span class="k">this</span><span class="p">(</span><span class="n">eventLoopFactory</span><span class="p">,</span> <span class="n">DefaultEventLoopThreadCount</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>缺省默认值：</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="k">readonly</span> <span class="kt">int</span> <span class="n">DefaultEventLoopThreadCount</span> <span class="p">=</span> <span class="n">Environment</span><span class="p">.</span><span class="n">ProcessorCount</span> <span class="p">*</span> <span class="m">2</span><span class="p">;</span>
+<span class="k">static</span> <span class="k">readonly</span> <span class="n">Func</span><span class="p">&lt;</span><span class="n">IEventLoopGroup</span><span class="p">,</span> <span class="n">IEventLoop</span><span class="p">&gt;</span> <span class="n">DefaultEventLoopFactory</span> <span class="p">=</span> <span class="k">group</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="nf">SingleThreadEventLoop</span><span class="p">(</span><span class="k">group</span><span class="p">);</span>
+</code></pre></div></div>
+<blockquote>
+  <p>默认生成2倍cpu数量的线程</p>
+</blockquote>
+
+<blockquote>
+  <p>默认产生的IEventLoop的实现类为SingleThreadEventLoop</p>
+</blockquote>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="nf">MultithreadEventLoopGroup</span><span class="p">(</span><span class="n">Func</span><span class="p">&lt;</span><span class="n">IEventLoopGroup</span><span class="p">,</span> <span class="n">IEventLoop</span><span class="p">&gt;</span> <span class="n">eventLoopFactory</span><span class="p">,</span> <span class="kt">int</span> <span class="n">eventLoopCount</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="n">eventLoops</span> <span class="p">=</span> <span class="k">new</span> <span class="n">IEventLoop</span><span class="p">[</span><span class="n">eventLoopCount</span><span class="p">];</span>
+    <span class="kt">var</span> <span class="n">terminationTasks</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Task</span><span class="p">[</span><span class="n">eventLoopCount</span><span class="p">];</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="n">eventLoopCount</span><span class="p">;</span> <span class="n">i</span><span class="p">++)</span>
+    <span class="p">{</span>
+        <span class="n">IEventLoop</span> <span class="n">eventLoop</span><span class="p">;</span>
+        <span class="kt">bool</span> <span class="n">success</span> <span class="p">=</span> <span class="k">false</span><span class="p">;</span>
+        <span class="k">try</span>
+        <span class="p">{</span>
+            <span class="n">eventLoop</span> <span class="p">=</span> <span class="nf">eventLoopFactory</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+            <span class="n">success</span> <span class="p">=</span> <span class="k">true</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">InvalidOperationException</span><span class="p">(</span><span class="s">"failed to create a child event loop."</span><span class="p">,</span> <span class="n">ex</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">finally</span>
+        <span class="p">{</span>
+            <span class="c1">// 如果创建失败，销毁之前的eventLoop</span>
+            <span class="k">if</span> <span class="p">(!</span><span class="n">success</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span>
+                        <span class="k">this</span><span class="p">.</span><span class="n">eventLoops</span>
+                            <span class="p">.</span><span class="nf">Take</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                            <span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">loop</span> <span class="p">=&gt;</span> <span class="n">loop</span><span class="p">.</span><span class="nf">ShutdownGracefullyAsync</span><span class="p">()))</span>
+                    <span class="p">.</span><span class="nf">Wait</span><span class="p">();</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="n">eventLoops</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">=</span> <span class="n">eventLoop</span><span class="p">;</span>
+        <span class="n">terminationTasks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">=</span> <span class="n">eventLoop</span><span class="p">.</span><span class="n">TerminationCompletion</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">this</span><span class="p">.</span><span class="n">TerminationCompletion</span> <span class="p">=</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span><span class="n">terminationTasks</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>可以看到，SingleThreadEventLoop是实际产生IEventLoop的类。</p>
+
+<p>SingleThreadEventLoop从名字看是一个执行任务的线程，继承自SingleThreadEventExecutor
+注意SingleThreadEventLoop的GetNext()方法：</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">new</span> <span class="n">IEventLoop</span> <span class="nf">GetNext</span><span class="p">()</span> <span class="p">=&gt;</span> <span class="k">this</span><span class="p">;</span>
+</code></pre></div></div>
+<p>以及构造函数：</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">protected</span> <span class="nf">SingleThreadEventExecutor</span><span class="p">(</span><span class="n">IEventExecutorGroup</span> <span class="n">parent</span><span class="p">,</span> <span class="kt">string</span> <span class="n">threadName</span><span class="p">,</span> <span class="n">TimeSpan</span> <span class="n">breakoutInterval</span><span class="p">,</span> <span class="n">IQueue</span><span class="p">&lt;</span><span class="n">IRunnable</span><span class="p">&gt;</span> <span class="n">taskQueue</span><span class="p">)</span>
+            <span class="p">:</span> <span class="k">base</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="n">terminationCompletionSource</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">TaskCompletionSource</span><span class="p">();</span>
+    <span class="k">this</span><span class="p">.</span><span class="n">taskQueue</span> <span class="p">=</span> <span class="n">taskQueue</span><span class="p">;</span>
+    <span class="k">this</span><span class="p">.</span><span class="n">preciseBreakoutInterval</span> <span class="p">=</span> <span class="n">PreciseTimeSpan</span><span class="p">.</span><span class="nf">FromTimeSpan</span><span class="p">(</span><span class="n">breakoutInterval</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="n">scheduler</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ExecutorTaskScheduler</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+    <span class="k">this</span><span class="p">.</span><span class="n">thread</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Thread</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="n">Loop</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="kt">string</span><span class="p">.</span><span class="nf">IsNullOrEmpty</span><span class="p">(</span><span class="n">threadName</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">thread</span><span class="p">.</span><span class="n">Name</span> <span class="p">=</span> <span class="n">DefaultWorkerThreadName</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">else</span>
+    <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">thread</span><span class="p">.</span><span class="n">Name</span> <span class="p">=</span> <span class="n">threadName</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">this</span><span class="p">.</span><span class="n">thread</span><span class="p">.</span><span class="nf">Start</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>其本质是声明了一个线程，执行Loop方法：</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">void</span> <span class="nf">Loop</span><span class="p">()</span>
+<span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nf">SetCurrentExecutor</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+
+  <span class="n">Task</span><span class="p">.</span><span class="n">Factory</span><span class="p">.</span><span class="nf">StartNew</span><span class="p">(</span>
+      <span class="p">()</span> <span class="p">=&gt;</span>
+      <span class="p">{</span>
+          <span class="k">try</span>
+          <span class="p">{</span>
+              <span class="n">Interlocked</span><span class="p">.</span><span class="nf">CompareExchange</span><span class="p">(</span><span class="k">ref</span> <span class="k">this</span><span class="p">.</span><span class="n">executionState</span><span class="p">,</span> <span class="n">ST_STARTED</span><span class="p">,</span> <span class="n">ST_NOT_STARTED</span><span class="p">);</span>
+              <span class="k">while</span> <span class="p">(!</span><span class="k">this</span><span class="p">.</span><span class="nf">ConfirmShutdown</span><span class="p">())</span>
+              <span class="p">{</span>
+                  <span class="k">this</span><span class="p">.</span><span class="nf">RunAllTasks</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="n">preciseBreakoutInterval</span><span class="p">);</span>
+              <span class="p">}</span>
+              <span class="k">this</span><span class="p">.</span><span class="nf">CleanupAndTerminate</span><span class="p">(</span><span class="k">true</span><span class="p">);</span>
+          <span class="p">}</span>
+          <span class="k">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="p">)</span>
+          <span class="p">{</span>
+              <span class="n">Logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="s">"{}: execution loop failed"</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="n">thread</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span> <span class="n">ex</span><span class="p">);</span>
+              <span class="k">this</span><span class="p">.</span><span class="n">executionState</span> <span class="p">=</span> <span class="n">ST_TERMINATED</span><span class="p">;</span>
+              <span class="k">this</span><span class="p">.</span><span class="n">terminationCompletionSource</span><span class="p">.</span><span class="nf">TrySetException</span><span class="p">(</span><span class="n">ex</span><span class="p">);</span>
+          <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="n">CancellationToken</span><span class="p">.</span><span class="n">None</span><span class="p">,</span>
+      <span class="n">TaskCreationOptions</span><span class="p">.</span><span class="n">None</span><span class="p">,</span>
+      <span class="k">this</span><span class="p">.</span><span class="n">scheduler</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+
+                <hr style="visibility: hidden;">
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2021/04/21/ssl/" data-toggle="tooltip" data-placement="top" title="SSL">
+                        Previous<br>
+                        <span>SSL</span>
+                        </a>
+                    </li>
+                    
+                    
+                </ul>
+
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>  
+
+    <!-- Side Catalog Container -->
+        
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+                				<a href="/tags/#linux" title="linux" rel="3">
+                                    linux
+                                </a>
+                            
+        				
+                            
+                				<a href="/tags/#eShop" title="eShop" rel="7">
+                                    eShop
+                                </a>
+                            
+        				
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="https://blog.csdn.net/operhero1990">csdn博客</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "operhero-github-io";
+    var disqus_identifier = "/2021/04/23/dotnetty";
+    var disqus_url = "https://operhero.github.io/2021/04/23/dotnetty/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/operhero">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+
+
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/operhero">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; operhero 2021
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+<!-- Service Worker -->
+
+<script type="text/javascript">
+    if(navigator.serviceWorker){
+        // For security reasons, a service worker can only control the pages that are in the same directory level or below it. That's why we put sw.js at ROOT level.
+        navigator.serviceWorker
+            .register('/sw.js')
+            .then((registration) => {console.log('Service Worker Registered. ', registration)})
+            .catch((error) => {console.log('ServiceWorker registration failed: ', error)})
+    }
+</script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/ 
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers   
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async('/js/jquery.tagcloud.js',function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+<script>
+    // dynamic User by Hux
+    var _gaId = '';
+    var _gaDomain = '';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Side Catalog -->
+
+
+
+
+
+<!-- Image to hack wechat -->
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
