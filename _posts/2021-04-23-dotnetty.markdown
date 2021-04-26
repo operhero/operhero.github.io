@@ -13,11 +13,52 @@ tags:
 git clone git@github.com:Azure/DotNetty.git
 ```
 
-# Handler与ChildHandler
-- Handler方法由AbstractBootstrap提供，在初始化时执行
-- ChildHandler方法由ServerBootstrap提供，而ServerBootstrap继承自AbstractBootstrap，在客户端成功connect后才执行，目的是监听已经连接的客户端的Channel的动作和状态
+阅读examples/Discard.Server工程,启动代码如下：
+```csharp
+var bossGroup = new MultithreadEventLoopGroup(1);
+  var workerGroup = new MultithreadEventLoopGroup();
+  try
+  {
+      var bootstrap = new ServerBootstrap();
+      bootstrap
+          .Group(bossGroup, workerGroup)
+          .Channel<TcpServerSocketChannel>()
+          .Option(ChannelOption.SoBacklog, 100)
+          .Handler(new LoggingHandler("LSTN"))
+          .ChildHandler(new ActionChannelInitializer<ISocketChannel>(channel =>
+          {
+              IChannelPipeline pipeline = channel.Pipeline;
+              if (tlsCertificate != null)
+              {
+                  pipeline.AddLast(TlsHandler.Server(tlsCertificate));
+              }
+              pipeline.AddLast(new LoggingHandler("CONN"));
+              pipeline.AddLast(new DiscardServerHandler());
+          }));
 
-# AbstractBootstrap的小技巧
+      IChannel bootstrapChannel = await bootstrap.BindAsync(ServerSettings.Port);
+
+      Console.ReadLine();
+
+      await bootstrapChannel.CloseAsync();
+  }
+  finally
+  {
+      Task.WaitAll(bossGroup.ShutdownGracefullyAsync(), workerGroup.ShutdownGracefullyAsync());
+  }
+```
+
+# ServerBootstrap
+![ServerBootstrap](/images/dotnetty/0.png)
+ServerBootstrap和Bootstrap都继承自AbstractBootstrap。
+
+ServerBootstrap绑定到指定端口来监听客户端连接请求，Bootstrap连接至远程服务端。并且ServerBootstrap包含两个EventLoopGroup，而Bootstrap只包含一个EventLoopGroup。ServerBootstrap包含两组通道，第一组包含一个ServerChannel，表示服务器绑定到本地端口的监听套接字；第二组包含用来处理客户端连接所创建的所有通道，每接受一个连接时便会创建一个通道
+
+### Handler与ChildHandler
+Handler方法由AbstractBootstrap提供，在初始化时执行
+ChildHandler方法由ServerBootstrap提供，而ServerBootstrap继承自AbstractBootstrap，在客户端成功connect后才执行，目的是监听已经连接的客户端的Channel的动作和状态
+
+### AbstractBootstrap的小技巧
 
 ```csharp
 public abstract class AbstractBootstrap<TBootstrap, TChannel>
@@ -117,17 +158,6 @@ public override IEventExecutor GetNext()
 }
 ```
 
-先上两张类图：
-![MultithreadEventLoopGroup](/images/dotnetty/4.png)
-![SingleThreadEventLoop](/images/dotnetty/5.png)
-
-Dotnetty中没有NioEventLoopGroup类和NioEventLoop类。
-
-这里要说明的是，SingleThreadEventLoop是MultithreadEventLoopGroup中IEventLoop一种默认实现方式，MultithreadEventLoopGroup实际上包含SingleThreadEventLoop数组
-
-另外值得注意的一点是，**EventLoop继承自EventLoopGroup！！！**
-
-
 上节例子中使用MultithreadEventLoopGroup，他有三种缺省构造方法：
 ```csharp
  /// <summary>Creates a new instance of <see cref="MultithreadEventLoopGroup"/>.</summary>
@@ -147,18 +177,7 @@ public MultithreadEventLoopGroup(Func<IEventLoopGroup, IEventLoop> eventLoopFact
     : this(eventLoopFactory, DefaultEventLoopThreadCount)
 {
 }
-```
 
-缺省默认值：
-```csharp
-static readonly int DefaultEventLoopThreadCount = Environment.ProcessorCount * 2;
-static readonly Func<IEventLoopGroup, IEventLoop> DefaultEventLoopFactory = group => new SingleThreadEventLoop(group);
-```
-> 默认生成2倍cpu数量的线程
-
-> 默认产生的IEventLoop的实现类为SingleThreadEventLoop
-
-```csharp
 public MultithreadEventLoopGroup(Func<IEventLoopGroup, IEventLoop> eventLoopFactory, int eventLoopCount)
 {
     this.eventLoops = new IEventLoop[eventLoopCount];
@@ -196,16 +215,34 @@ public MultithreadEventLoopGroup(Func<IEventLoopGroup, IEventLoop> eventLoopFact
 }
 ```
 
-可以看到，SingleThreadEventLoop是实际产生IEventLoop的类。
-
-
-
-SingleThreadEventLoop从名字看是一个执行任务的线程，继承自SingleThreadEventExecutor
-注意SingleThreadEventLoop的GetNext()方法：
+缺省默认值：
 ```csharp
-public new IEventLoop GetNext() => this;
+static readonly int DefaultEventLoopThreadCount = Environment.ProcessorCount * 2;
+static readonly Func<IEventLoopGroup, IEventLoop> DefaultEventLoopFactory = group => new SingleThreadEventLoop(group);
 ```
-以及构造函数：
+
+> 默认生成2倍cpu数量的线程
+
+> 默认产生的IEventLoop的实现类为SingleThreadEventLoop
+
+![MultithreadEventLoopGroup](/images/dotnetty/4.png)
+
+
+Dotnetty中没有NioEventLoopGroup类
+
+这里要说明的是:
+- MultithreadEventLoopGroup(IEventLoopGroup)是一个线程池，包含一个或多个SingleThreadEventLoop(IEventLoop)
+- 一个SingleThreadEventLoop(IEventLoop)在它的生命周期内只和一个Thread绑定
+- 所有 SingleThreadEventLoop(IEventLoop) 处理的 I/O 事件都将在它专有的 Thread 上被处理
+- 一个 IChannel 在它的生命周期内只注册于一个 SingleThreadEventLoop(IEventLoop)
+- 每一个 SingleThreadEventLoop(IEventLoop) 负责处理一个或多个 IChannel
+
+# SingleThreadEventLoop
+![SingleThreadEventLoop](/images/dotnetty/5.png)
+有点难以理解的是，**IEventLoop继承自IEventLoopGroup！！！**
+
+SingleThreadEventLoop是只有单个线程的线程池，但并不是一个纯粹的线程池，还负责处理系统 Task 和一些定时任务。
+SingleThreadEventLoop继承自SingleThreadEventExecutor，调用父类的构造函数：
 ```csharp
 protected SingleThreadEventExecutor(IEventExecutorGroup parent, string threadName, TimeSpan breakoutInterval, IQueue<IRunnable> taskQueue)
             : base(parent)
@@ -257,3 +294,166 @@ void Loop()
       this.scheduler);
 }
 ```
+
+```csharp
+bool RunAllTasks(PreciseTimeSpan timeout)
+{
+    this.FetchFromScheduledTaskQueue();
+    IRunnable task = this.PollTask();
+    if (task == null)
+    {
+        return false;
+    }
+
+    PreciseTimeSpan deadline = PreciseTimeSpan.Deadline(timeout);
+    long runTasks = 0;
+    PreciseTimeSpan executionTime;
+    while (true)
+    {
+        SafeExecute(task);
+
+        runTasks++;
+
+        // Check timeout every 64 tasks because nanoTime() is relatively expensive.
+        // XXX: Hard-coded value - will make it configurable if it is really a problem.
+        if ((runTasks & 0x3F) == 0)
+        {
+            executionTime = PreciseTimeSpan.FromStart;
+            if (executionTime >= deadline)
+            {
+                break;
+            }
+        }
+
+        task = this.PollTask();
+        if (task == null)
+        {
+            executionTime = PreciseTimeSpan.FromStart;
+            break;
+        }
+    }
+
+    this.lastExecutionTime = executionTime;
+    return true;
+}
+```
+RunAllTasks取SingleThreadEventExecutor的taskQueue里的任务执行。
+
+# childGroup/workerGroup
+ServerBootstrap的childGroup是如何起作用的？
+
+```csharp
+IChannel boundChannel = await bootstrap.BindAsync(ServerSettings.Port);
+```
+
+从BindAsync一直跟进到ServerBootstrap的Init方法
+```csharp
+protected override void Init(IChannel channel)
+{
+    SetChannelOptions(channel, this.Options, Logger);
+
+    foreach (AttributeValue e in this.Attributes)
+    {
+        e.Set(channel);
+    }
+
+    IChannelPipeline p = channel.Pipeline;
+    IChannelHandler channelHandler = this.Handler();
+    if (channelHandler != null)
+    {
+        p.AddLast((string)null, channelHandler);
+    }
+
+    IEventLoopGroup currentChildGroup = this.childGroup;
+    IChannelHandler currentChildHandler = this.childHandler;
+    ChannelOptionValue[] currentChildOptions = this.childOptions.Values.ToArray();
+    AttributeValue[] currentChildAttrs = this.childAttrs.Values.ToArray();
+
+    p.AddLast(new ActionChannelInitializer<IChannel>(ch =>
+    {
+        ch.Pipeline.AddLast(new ServerBootstrapAcceptor(currentChildGroup, currentChildHandler,
+            currentChildOptions, currentChildAttrs));
+    }));
+}
+```
+
+```csharp
+public sealed class ActionChannelInitializer<T> : ChannelInitializer<T>
+    where T : IChannel
+{
+    readonly Action<T> initializationAction;
+
+    public ActionChannelInitializer(Action<T> initializationAction)
+    {
+        Contract.Requires(initializationAction != null);
+
+        this.initializationAction = initializationAction;
+    }
+
+    protected override void InitChannel(T channel) => this.initializationAction(channel);
+
+    public override string ToString() => nameof(ActionChannelInitializer<T>) + "[" + StringUtil.SimpleClassName(typeof(T)) + "]";
+}
+```
+
+负责accept新链接的channel的pipeline添加了**ActionChannelInitializer**，来看ActionChannelInitializer的InitChannel方法说明：
+> This method will be called once the IChannel was registered. After the method returns this instance will be removed from the IChannelPipeline of the IChannel.
+
+其目的是在IChannel被register到IEventLoop的时候执行，然后从IChannel的pipeline中移除自己。
+
+来看看**ServerBootstrapAcceptor**的代码：
+```csharp
+public override void ChannelRead(IChannelHandlerContext ctx, object msg)
+{
+    var child = (IChannel)msg;
+
+    child.Pipeline.AddLast((string)null, this.childHandler);
+
+    SetChannelOptions(child, this.childOptions, Logger);
+
+    foreach (AttributeValue attr in this.childAttrs)
+    {
+        attr.Set(child);
+    }
+
+    // todo: async/await instead?
+    try
+    {
+        this.childGroup.RegisterAsync(child).ContinueWith(
+            (future, state) => ForceClose((IChannel)state, future.Exception),
+            child,
+            TaskContinuationOptions.NotOnRanToCompletion | TaskContinuationOptions.ExecuteSynchronously);
+    }
+    catch (Exception ex)
+    {
+        ForceClose(child, ex);
+    }
+}
+```
+
+当IChannel可读时，把IChannel绑定到childGroup的一个IEventLoop上去。
+
+来看看**this.childGroup.RegisterAsync(child)**的实现：
+```csharp
+public override IEventExecutor GetNext()
+{
+    int id = Interlocked.Increment(ref this.requestId);
+    return this.eventLoops[Math.Abs(id % this.eventLoops.Length)];
+}
+
+public Task RegisterAsync(IChannel channel) => ((IEventLoop)this.GetNext()).RegisterAsync(channel);
+```
+
+MultithreadEventLoopGroup按顺序选择一个SingleThreadEventLoop，绑定此IChannel。
+
+# pipeline、context与handler之间的关系
+![关系](/images/dotnetty/6.png)
+1. 每个handler都是无关联的
+2. handler都是伴生于context的
+3. context是伴生于一个双线链表当中
+4. 双向链表伴生于pipeline
+5. context中保留有pipeline的引用
+
+# handler
+![handle继承图](/images/dotnetty/7.png)
+这是netty中的类图，DotNetty中去掉了ChannelInboundHandlerAdapter和ChannelOutboundHandlerAdapter，所有的Handler继承自->**ChannelHandlerAdapter**->**IChannelHandler**

@@ -208,10 +208,9 @@
 git clone git@github.com:Azure/DotNetty.git
 
 
-Handler与ChildHandler
-
-  Handler方法由AbstractBootstrap提供，在初始化时执行
-  ChildHandler方法由ServerBootstrap提供，而ServerBootstrap继承自AbstractBootstrap...
+阅读examples/Discard.Server工程,启动代码如下：
+var bossGroup = new MultithreadEventLoopGroup(1);
+  var workerGroup = new MultithreadEventLoopGro...
         </div>
     </a>
     <p class="post-meta">

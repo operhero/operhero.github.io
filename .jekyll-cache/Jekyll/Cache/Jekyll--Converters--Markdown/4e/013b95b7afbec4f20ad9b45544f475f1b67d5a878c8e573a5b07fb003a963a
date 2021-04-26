@@ -1,4 +1,4 @@
-I"al<h1 id="下载demo">下载demo</h1>
+I"��<h1 id="下载demo">下载demo</h1>
 <p>克隆github项目</p>
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone git@github.com:Azure/DotNetty.git
 </code></pre></div></div>
@@ -105,16 +105,6 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>先上两张类图：
-<img src="/images/dotnetty/4.png" alt="MultithreadEventLoopGroup" />
-<img src="/images/dotnetty/5.png" alt="SingleThreadEventLoop" /></p>
-
-<p>Dotnetty中没有NioEventLoopGroup类和NioEventLoop类。</p>
-
-<p>这里要说明的是，SingleThreadEventLoop是MultithreadEventLoopGroup中IEventLoop一种默认实现方式，MultithreadEventLoopGroup实际上包含SingleThreadEventLoop数组</p>
-
-<p>另外值得注意的一点是，<strong>EventLoop继承自EventLoopGroup！！！</strong></p>
-
 <p>上节例子中使用MultithreadEventLoopGroup，他有三种缺省构造方法：</p>
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="c1">/// &lt;summary&gt;Creates a new instance of &lt;see cref="MultithreadEventLoopGroup"/&gt;.&lt;/summary&gt;</span>
 <span class="k">public</span> <span class="nf">MultithreadEventLoopGroup</span><span class="p">()</span>
@@ -133,21 +123,8 @@
     <span class="p">:</span> <span class="k">this</span><span class="p">(</span><span class="n">eventLoopFactory</span><span class="p">,</span> <span class="n">DefaultEventLoopThreadCount</span><span class="p">)</span>
 <span class="p">{</span>
 <span class="p">}</span>
-</code></pre></div></div>
 
-<p>缺省默认值：</p>
-<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="k">readonly</span> <span class="kt">int</span> <span class="n">DefaultEventLoopThreadCount</span> <span class="p">=</span> <span class="n">Environment</span><span class="p">.</span><span class="n">ProcessorCount</span> <span class="p">*</span> <span class="m">2</span><span class="p">;</span>
-<span class="k">static</span> <span class="k">readonly</span> <span class="n">Func</span><span class="p">&lt;</span><span class="n">IEventLoopGroup</span><span class="p">,</span> <span class="n">IEventLoop</span><span class="p">&gt;</span> <span class="n">DefaultEventLoopFactory</span> <span class="p">=</span> <span class="k">group</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="nf">SingleThreadEventLoop</span><span class="p">(</span><span class="k">group</span><span class="p">);</span>
-</code></pre></div></div>
-<blockquote>
-  <p>默认生成2倍cpu数量的线程</p>
-</blockquote>
-
-<blockquote>
-  <p>默认产生的IEventLoop的实现类为SingleThreadEventLoop</p>
-</blockquote>
-
-<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="nf">MultithreadEventLoopGroup</span><span class="p">(</span><span class="n">Func</span><span class="p">&lt;</span><span class="n">IEventLoopGroup</span><span class="p">,</span> <span class="n">IEventLoop</span><span class="p">&gt;</span> <span class="n">eventLoopFactory</span><span class="p">,</span> <span class="kt">int</span> <span class="n">eventLoopCount</span><span class="p">)</span>
+<span class="k">public</span> <span class="nf">MultithreadEventLoopGroup</span><span class="p">(</span><span class="n">Func</span><span class="p">&lt;</span><span class="n">IEventLoopGroup</span><span class="p">,</span> <span class="n">IEventLoop</span><span class="p">&gt;</span> <span class="n">eventLoopFactory</span><span class="p">,</span> <span class="kt">int</span> <span class="n">eventLoopCount</span><span class="p">)</span>
 <span class="p">{</span>
     <span class="k">this</span><span class="p">.</span><span class="n">eventLoops</span> <span class="p">=</span> <span class="k">new</span> <span class="n">IEventLoop</span><span class="p">[</span><span class="n">eventLoopCount</span><span class="p">];</span>
     <span class="kt">var</span> <span class="n">terminationTasks</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Task</span><span class="p">[</span><span class="n">eventLoopCount</span><span class="p">];</span>
@@ -184,13 +161,38 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>可以看到，SingleThreadEventLoop是实际产生IEventLoop的类。</p>
-
-<p>SingleThreadEventLoop从名字看是一个执行任务的线程，继承自SingleThreadEventExecutor
-注意SingleThreadEventLoop的GetNext()方法：</p>
-<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">new</span> <span class="n">IEventLoop</span> <span class="nf">GetNext</span><span class="p">()</span> <span class="p">=&gt;</span> <span class="k">this</span><span class="p">;</span>
+<p>缺省默认值：</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="k">readonly</span> <span class="kt">int</span> <span class="n">DefaultEventLoopThreadCount</span> <span class="p">=</span> <span class="n">Environment</span><span class="p">.</span><span class="n">ProcessorCount</span> <span class="p">*</span> <span class="m">2</span><span class="p">;</span>
+<span class="k">static</span> <span class="k">readonly</span> <span class="n">Func</span><span class="p">&lt;</span><span class="n">IEventLoopGroup</span><span class="p">,</span> <span class="n">IEventLoop</span><span class="p">&gt;</span> <span class="n">DefaultEventLoopFactory</span> <span class="p">=</span> <span class="k">group</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="nf">SingleThreadEventLoop</span><span class="p">(</span><span class="k">group</span><span class="p">);</span>
 </code></pre></div></div>
-<p>以及构造函数：</p>
+
+<blockquote>
+  <p>默认生成2倍cpu数量的线程</p>
+</blockquote>
+
+<blockquote>
+  <p>默认产生的IEventLoop的实现类为SingleThreadEventLoop</p>
+</blockquote>
+
+<p><img src="/images/dotnetty/4.png" alt="MultithreadEventLoopGroup" /></p>
+
+<p>Dotnetty中没有NioEventLoopGroup类</p>
+
+<p>这里要说明的是:</p>
+<ul>
+  <li>MultithreadEventLoopGroup(IEventLoopGroup)是一个线程池，包含一个或多个SingleThreadEventLoop(IEventLoop)</li>
+  <li>一个SingleThreadEventLoop(IEventLoop)在它的生命周期内只和一个Thread绑定</li>
+  <li>所有 SingleThreadEventLoop(IEventLoop) 处理的 I/O 事件都将在它专有的 Thread 上被处理</li>
+  <li>一个 IChannel 在它的生命周期内只注册于一个 SingleThreadEventLoop(IEventLoop)</li>
+  <li>每一个 SingleThreadEventLoop(IEventLoop) 负责处理一个或多个 IChannel</li>
+</ul>
+
+<h1 id="singlethreadeventloop">SingleThreadEventLoop</h1>
+<p><img src="/images/dotnetty/5.png" alt="SingleThreadEventLoop" />
+有点难以理解的是，<strong>IEventLoop继承自IEventLoopGroup！！！</strong></p>
+
+<p>SingleThreadEventLoop是只有单个线程的线程池，但并不是一个纯粹的线程池，还负责处理系统 Task 和一些定时任务。
+SingleThreadEventLoop继承自SingleThreadEventExecutor，调用父类的构造函数：</p>
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">protected</span> <span class="nf">SingleThreadEventExecutor</span><span class="p">(</span><span class="n">IEventExecutorGroup</span> <span class="n">parent</span><span class="p">,</span> <span class="kt">string</span> <span class="n">threadName</span><span class="p">,</span> <span class="n">TimeSpan</span> <span class="n">breakoutInterval</span><span class="p">,</span> <span class="n">IQueue</span><span class="p">&lt;</span><span class="n">IRunnable</span><span class="p">&gt;</span> <span class="n">taskQueue</span><span class="p">)</span>
             <span class="p">:</span> <span class="k">base</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
 <span class="p">{</span>
@@ -240,4 +242,151 @@
       <span class="k">this</span><span class="p">.</span><span class="n">scheduler</span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre></div></div>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">bool</span> <span class="nf">RunAllTasks</span><span class="p">(</span><span class="n">PreciseTimeSpan</span> <span class="n">timeout</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nf">FetchFromScheduledTaskQueue</span><span class="p">();</span>
+    <span class="n">IRunnable</span> <span class="n">task</span> <span class="p">=</span> <span class="k">this</span><span class="p">.</span><span class="nf">PollTask</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">task</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">PreciseTimeSpan</span> <span class="n">deadline</span> <span class="p">=</span> <span class="n">PreciseTimeSpan</span><span class="p">.</span><span class="nf">Deadline</span><span class="p">(</span><span class="n">timeout</span><span class="p">);</span>
+    <span class="kt">long</span> <span class="n">runTasks</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+    <span class="n">PreciseTimeSpan</span> <span class="n">executionTime</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="k">true</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nf">SafeExecute</span><span class="p">(</span><span class="n">task</span><span class="p">);</span>
+
+        <span class="n">runTasks</span><span class="p">++;</span>
+
+        <span class="c1">// Check timeout every 64 tasks because nanoTime() is relatively expensive.</span>
+        <span class="c1">// XXX: Hard-coded value - will make it configurable if it is really a problem.</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">runTasks</span> <span class="p">&amp;</span> <span class="m">0x3F</span><span class="p">)</span> <span class="p">==</span> <span class="m">0</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">executionTime</span> <span class="p">=</span> <span class="n">PreciseTimeSpan</span><span class="p">.</span><span class="n">FromStart</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">executionTime</span> <span class="p">&gt;=</span> <span class="n">deadline</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="n">task</span> <span class="p">=</span> <span class="k">this</span><span class="p">.</span><span class="nf">PollTask</span><span class="p">();</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">task</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">executionTime</span> <span class="p">=</span> <span class="n">PreciseTimeSpan</span><span class="p">.</span><span class="n">FromStart</span><span class="p">;</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">this</span><span class="p">.</span><span class="n">lastExecutionTime</span> <span class="p">=</span> <span class="n">executionTime</span><span class="p">;</span>
+    <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>RunAllTasks取SingleThreadEventExecutor的taskQueue里的任务执行。</p>
+
+<h1 id="childgroupworkergroup">childGroup/workerGroup</h1>
+<p>ServerBootstrap的childGroup是如何起作用的？</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">IChannel</span> <span class="n">boundChannel</span> <span class="p">=</span> <span class="k">await</span> <span class="n">bootstrap</span><span class="p">.</span><span class="nf">BindAsync</span><span class="p">(</span><span class="n">ServerSettings</span><span class="p">.</span><span class="n">Port</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>从BindAsync一直跟进到ServerBootstrap的Init方法</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">protected</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">Init</span><span class="p">(</span><span class="n">IChannel</span> <span class="n">channel</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nf">SetChannelOptions</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="n">Options</span><span class="p">,</span> <span class="n">Logger</span><span class="p">);</span>
+
+    <span class="k">foreach</span> <span class="p">(</span><span class="n">AttributeValue</span> <span class="n">e</span> <span class="k">in</span> <span class="k">this</span><span class="p">.</span><span class="n">Attributes</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">e</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="n">channel</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">IChannelPipeline</span> <span class="n">p</span> <span class="p">=</span> <span class="n">channel</span><span class="p">.</span><span class="n">Pipeline</span><span class="p">;</span>
+    <span class="n">IChannelHandler</span> <span class="n">channelHandler</span> <span class="p">=</span> <span class="k">this</span><span class="p">.</span><span class="nf">Handler</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">channelHandler</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">p</span><span class="p">.</span><span class="nf">AddLast</span><span class="p">((</span><span class="kt">string</span><span class="p">)</span><span class="k">null</span><span class="p">,</span> <span class="n">channelHandler</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">IEventLoopGroup</span> <span class="n">currentChildGroup</span> <span class="p">=</span> <span class="k">this</span><span class="p">.</span><span class="n">childGroup</span><span class="p">;</span>
+    <span class="n">IChannelHandler</span> <span class="n">currentChildHandler</span> <span class="p">=</span> <span class="k">this</span><span class="p">.</span><span class="n">childHandler</span><span class="p">;</span>
+    <span class="n">ChannelOptionValue</span><span class="p">[]</span> <span class="n">currentChildOptions</span> <span class="p">=</span> <span class="k">this</span><span class="p">.</span><span class="n">childOptions</span><span class="p">.</span><span class="n">Values</span><span class="p">.</span><span class="nf">ToArray</span><span class="p">();</span>
+    <span class="n">AttributeValue</span><span class="p">[]</span> <span class="n">currentChildAttrs</span> <span class="p">=</span> <span class="k">this</span><span class="p">.</span><span class="n">childAttrs</span><span class="p">.</span><span class="n">Values</span><span class="p">.</span><span class="nf">ToArray</span><span class="p">();</span>
+
+    <span class="n">p</span><span class="p">.</span><span class="nf">AddLast</span><span class="p">(</span><span class="k">new</span> <span class="n">ActionChannelInitializer</span><span class="p">&lt;</span><span class="n">IChannel</span><span class="p">&gt;(</span><span class="n">ch</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="n">ch</span><span class="p">.</span><span class="n">Pipeline</span><span class="p">.</span><span class="nf">AddLast</span><span class="p">(</span><span class="k">new</span> <span class="nf">ServerBootstrapAcceptor</span><span class="p">(</span><span class="n">currentChildGroup</span><span class="p">,</span> <span class="n">currentChildHandler</span><span class="p">,</span>
+            <span class="n">currentChildOptions</span><span class="p">,</span> <span class="n">currentChildAttrs</span><span class="p">));</span>
+    <span class="p">}));</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">sealed</span> <span class="k">class</span> <span class="nc">ActionChannelInitializer</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span> <span class="p">:</span> <span class="n">ChannelInitializer</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span>
+    <span class="k">where</span> <span class="n">T</span> <span class="p">:</span> <span class="n">IChannel</span>
+<span class="p">{</span>
+    <span class="k">readonly</span> <span class="n">Action</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span> <span class="n">initializationAction</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="nf">ActionChannelInitializer</span><span class="p">(</span><span class="n">Action</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span> <span class="n">initializationAction</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">Contract</span><span class="p">.</span><span class="nf">Requires</span><span class="p">(</span><span class="n">initializationAction</span> <span class="p">!=</span> <span class="k">null</span><span class="p">);</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="n">initializationAction</span> <span class="p">=</span> <span class="n">initializationAction</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">protected</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">InitChannel</span><span class="p">(</span><span class="n">T</span> <span class="n">channel</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="k">this</span><span class="p">.</span><span class="nf">initializationAction</span><span class="p">(</span><span class="n">channel</span><span class="p">);</span>
+
+    <span class="k">public</span> <span class="k">override</span> <span class="kt">string</span> <span class="nf">ToString</span><span class="p">()</span> <span class="p">=&gt;</span> <span class="k">nameof</span><span class="p">(</span><span class="n">ActionChannelInitializer</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;)</span> <span class="p">+</span> <span class="s">"["</span> <span class="p">+</span> <span class="n">StringUtil</span><span class="p">.</span><span class="nf">SimpleClassName</span><span class="p">(</span><span class="k">typeof</span><span class="p">(</span><span class="n">T</span><span class="p">))</span> <span class="p">+</span> <span class="s">"]"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>负责accept新链接的channel的pipeline添加了<strong>ActionChannelInitializer</strong>，来看ActionChannelInitializer的InitChannel方法说明：</p>
+<blockquote>
+  <p>This method will be called once the IChannel was registered. After the method returns this instance will be removed from the IChannelPipeline of the IChannel.</p>
+</blockquote>
+
+<p>其目的是在IChannel被register到IEventLoop的时候执行，然后从IChannel的pipeline中移除自己。</p>
+
+<p>来看看<strong>ServerBootstrapAcceptor</strong>的代码：</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">ChannelRead</span><span class="p">(</span><span class="n">IChannelHandlerContext</span> <span class="n">ctx</span><span class="p">,</span> <span class="kt">object</span> <span class="n">msg</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">child</span> <span class="p">=</span> <span class="p">(</span><span class="n">IChannel</span><span class="p">)</span><span class="n">msg</span><span class="p">;</span>
+
+    <span class="n">child</span><span class="p">.</span><span class="n">Pipeline</span><span class="p">.</span><span class="nf">AddLast</span><span class="p">((</span><span class="kt">string</span><span class="p">)</span><span class="k">null</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="n">childHandler</span><span class="p">);</span>
+
+    <span class="nf">SetChannelOptions</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="n">childOptions</span><span class="p">,</span> <span class="n">Logger</span><span class="p">);</span>
+
+    <span class="k">foreach</span> <span class="p">(</span><span class="n">AttributeValue</span> <span class="n">attr</span> <span class="k">in</span> <span class="k">this</span><span class="p">.</span><span class="n">childAttrs</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">attr</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="n">child</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="c1">// todo: async/await instead?</span>
+    <span class="k">try</span>
+    <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">childGroup</span><span class="p">.</span><span class="nf">RegisterAsync</span><span class="p">(</span><span class="n">child</span><span class="p">).</span><span class="nf">ContinueWith</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">future</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nf">ForceClose</span><span class="p">((</span><span class="n">IChannel</span><span class="p">)</span><span class="n">state</span><span class="p">,</span> <span class="n">future</span><span class="p">.</span><span class="n">Exception</span><span class="p">),</span>
+            <span class="n">child</span><span class="p">,</span>
+            <span class="n">TaskContinuationOptions</span><span class="p">.</span><span class="n">NotOnRanToCompletion</span> <span class="p">|</span> <span class="n">TaskContinuationOptions</span><span class="p">.</span><span class="n">ExecuteSynchronously</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nf">ForceClose</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">ex</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>当IChannel可读时，把IChannel绑定到childGroup的一个IEventLoop上去。</p>
+
+<p>来看看<strong>this.childGroup.RegisterAsync(child)</strong>的实现：</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">override</span> <span class="n">IEventExecutor</span> <span class="nf">GetNext</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">id</span> <span class="p">=</span> <span class="n">Interlocked</span><span class="p">.</span><span class="nf">Increment</span><span class="p">(</span><span class="k">ref</span> <span class="k">this</span><span class="p">.</span><span class="n">requestId</span><span class="p">);</span>
+    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="n">eventLoops</span><span class="p">[</span><span class="n">Math</span><span class="p">.</span><span class="nf">Abs</span><span class="p">(</span><span class="n">id</span> <span class="p">%</span> <span class="k">this</span><span class="p">.</span><span class="n">eventLoops</span><span class="p">.</span><span class="n">Length</span><span class="p">)];</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="n">Task</span> <span class="nf">RegisterAsync</span><span class="p">(</span><span class="n">IChannel</span> <span class="n">channel</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">((</span><span class="n">IEventLoop</span><span class="p">)</span><span class="k">this</span><span class="p">.</span><span class="nf">GetNext</span><span class="p">()).</span><span class="nf">RegisterAsync</span><span class="p">(</span><span class="n">channel</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>MultithreadEventLoopGroup按顺序选择一个SingleThreadEventLoop，绑定此IChannel。</p>
 :ET
