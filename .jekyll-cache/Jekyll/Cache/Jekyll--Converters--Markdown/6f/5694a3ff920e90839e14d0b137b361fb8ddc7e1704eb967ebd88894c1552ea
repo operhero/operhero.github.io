@@ -1,15 +1,53 @@
-I"��<h1 id="下载demo">下载demo</h1>
+I"C�<h1 id="下载demo">下载demo</h1>
 <p>克隆github项目</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone git@github.com:Azure/DotNetty.git
+<pre><code class="language-Git">git clone git@github.com:Azure/DotNetty.git
+</code></pre>
+
+<p>阅读examples/Discard.Server工程,启动代码如下：</p>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">bossGroup</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">MultithreadEventLoopGroup</span><span class="p">(</span><span class="m">1</span><span class="p">);</span>
+  <span class="kt">var</span> <span class="n">workerGroup</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">MultithreadEventLoopGroup</span><span class="p">();</span>
+  <span class="k">try</span>
+  <span class="p">{</span>
+      <span class="kt">var</span> <span class="n">bootstrap</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ServerBootstrap</span><span class="p">();</span>
+      <span class="n">bootstrap</span>
+          <span class="p">.</span><span class="nf">Group</span><span class="p">(</span><span class="n">bossGroup</span><span class="p">,</span> <span class="n">workerGroup</span><span class="p">)</span>
+          <span class="p">.</span><span class="n">Channel</span><span class="p">&lt;</span><span class="n">TcpServerSocketChannel</span><span class="p">&gt;()</span>
+          <span class="p">.</span><span class="nf">Option</span><span class="p">(</span><span class="n">ChannelOption</span><span class="p">.</span><span class="n">SoBacklog</span><span class="p">,</span> <span class="m">100</span><span class="p">)</span>
+          <span class="p">.</span><span class="nf">Handler</span><span class="p">(</span><span class="k">new</span> <span class="nf">LoggingHandler</span><span class="p">(</span><span class="s">"LSTN"</span><span class="p">))</span>
+          <span class="p">.</span><span class="nf">ChildHandler</span><span class="p">(</span><span class="k">new</span> <span class="n">ActionChannelInitializer</span><span class="p">&lt;</span><span class="n">ISocketChannel</span><span class="p">&gt;(</span><span class="n">channel</span> <span class="p">=&gt;</span>
+          <span class="p">{</span>
+              <span class="n">IChannelPipeline</span> <span class="n">pipeline</span> <span class="p">=</span> <span class="n">channel</span><span class="p">.</span><span class="n">Pipeline</span><span class="p">;</span>
+              <span class="k">if</span> <span class="p">(</span><span class="n">tlsCertificate</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span>
+              <span class="p">{</span>
+                  <span class="n">pipeline</span><span class="p">.</span><span class="nf">AddLast</span><span class="p">(</span><span class="n">TlsHandler</span><span class="p">.</span><span class="nf">Server</span><span class="p">(</span><span class="n">tlsCertificate</span><span class="p">));</span>
+              <span class="p">}</span>
+              <span class="n">pipeline</span><span class="p">.</span><span class="nf">AddLast</span><span class="p">(</span><span class="k">new</span> <span class="nf">LoggingHandler</span><span class="p">(</span><span class="s">"CONN"</span><span class="p">));</span>
+              <span class="n">pipeline</span><span class="p">.</span><span class="nf">AddLast</span><span class="p">(</span><span class="k">new</span> <span class="nf">DiscardServerHandler</span><span class="p">());</span>
+          <span class="p">}));</span>
+
+      <span class="n">IChannel</span> <span class="n">bootstrapChannel</span> <span class="p">=</span> <span class="k">await</span> <span class="n">bootstrap</span><span class="p">.</span><span class="nf">BindAsync</span><span class="p">(</span><span class="n">ServerSettings</span><span class="p">.</span><span class="n">Port</span><span class="p">);</span>
+
+      <span class="n">Console</span><span class="p">.</span><span class="nf">ReadLine</span><span class="p">();</span>
+
+      <span class="k">await</span> <span class="n">bootstrapChannel</span><span class="p">.</span><span class="nf">CloseAsync</span><span class="p">();</span>
+  <span class="p">}</span>
+  <span class="k">finally</span>
+  <span class="p">{</span>
+      <span class="n">Task</span><span class="p">.</span><span class="nf">WaitAll</span><span class="p">(</span><span class="n">bossGroup</span><span class="p">.</span><span class="nf">ShutdownGracefullyAsync</span><span class="p">(),</span> <span class="n">workerGroup</span><span class="p">.</span><span class="nf">ShutdownGracefullyAsync</span><span class="p">());</span>
+  <span class="p">}</span>
 </code></pre></div></div>
 
-<h1 id="handler与childhandler">Handler与ChildHandler</h1>
-<ul>
-  <li>Handler方法由AbstractBootstrap提供，在初始化时执行</li>
-  <li>ChildHandler方法由ServerBootstrap提供，而ServerBootstrap继承自AbstractBootstrap，在客户端成功connect后才执行，目的是监听已经连接的客户端的Channel的动作和状态</li>
-</ul>
+<h1 id="serverbootstrap">ServerBootstrap</h1>
+<p><img src="/images/dotnetty/0.png" alt="ServerBootstrap" />
+ServerBootstrap和Bootstrap都继承自AbstractBootstrap。</p>
 
-<h1 id="abstractbootstrap的小技巧">AbstractBootstrap的小技巧</h1>
+<p>ServerBootstrap绑定到指定端口来监听客户端连接请求，Bootstrap连接至远程服务端。并且ServerBootstrap包含两个EventLoopGroup，而Bootstrap只包含一个EventLoopGroup。ServerBootstrap包含两组通道，第一组包含一个ServerChannel，表示服务器绑定到本地端口的监听套接字；第二组包含用来处理客户端连接所创建的所有通道，每接受一个连接时便会创建一个通道</p>
+
+<h3 id="handler与childhandler">Handler与ChildHandler</h3>
+<p>Handler方法由AbstractBootstrap提供，在初始化时执行
+ChildHandler方法由ServerBootstrap提供，而ServerBootstrap继承自AbstractBootstrap，在客户端成功connect后才执行，目的是监听已经连接的客户端的Channel的动作和状态</p>
+
+<h3 id="abstractbootstrap的小技巧">AbstractBootstrap的小技巧</h3>
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">abstract</span> <span class="k">class</span> <span class="nc">AbstractBootstrap</span><span class="p">&lt;</span><span class="n">TBootstrap</span><span class="p">,</span> <span class="n">TChannel</span><span class="p">&gt;</span>
         <span class="k">where</span> <span class="n">TBootstrap</span> <span class="p">:</span> <span class="n">AbstractBootstrap</span><span class="p">&lt;</span><span class="n">TBootstrap</span><span class="p">,</span> <span class="n">TChannel</span><span class="p">&gt;</span>
@@ -389,4 +427,18 @@ SingleThreadEventLoop继承自SingleThreadEventExecutor，调用父类的构造�
 </code></pre></div></div>
 
 <p>MultithreadEventLoopGroup按顺序选择一个SingleThreadEventLoop，绑定此IChannel。</p>
+
+<h1 id="pipelinecontext与handler之间的关系">pipeline、context与handler之间的关系</h1>
+<p><img src="/images/dotnetty/6.png" alt="关系" /></p>
+<ol>
+  <li>每个handler都是无关联的</li>
+  <li>handler都是伴生于context的</li>
+  <li>context是伴生于一个双线链表当中</li>
+  <li>双向链表伴生于pipeline</li>
+  <li>context中保留有pipeline的引用</li>
+</ol>
+
+<h1 id="handler">handler</h1>
+<p><img src="/images/dotnetty/7.png" alt="handle继承图" />
+这是netty中的类图，DotNetty中去掉了ChannelInboundHandlerAdapter和ChannelOutboundHandlerAdapter，所有的Handler继承自-&gt;<strong>ChannelHandlerAdapter</strong>-&gt;<strong>IChannelHandler</strong></p>
 :ET

@@ -1,7 +1,7 @@
-I"]�<h1 id="下载demo">下载demo</h1>
+I"C�<h1 id="下载demo">下载demo</h1>
 <p>克隆github项目</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone git@github.com:Azure/DotNetty.git
-</code></pre></div></div>
+<pre><code class="language-git">git clone git@github.com:Azure/DotNetty.git
+</code></pre>
 
 <p>阅读examples/Discard.Server工程,启动代码如下：</p>
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">bossGroup</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">MultithreadEventLoopGroup</span><span class="p">(</span><span class="m">1</span><span class="p">);</span>
@@ -437,4 +437,8 @@ SingleThreadEventLoop继承自SingleThreadEventExecutor，调用父类的构造�
   <li>双向链表伴生于pipeline</li>
   <li>context中保留有pipeline的引用</li>
 </ol>
+
+<h1 id="handler">handler</h1>
+<p><img src="/images/dotnetty/7.png" alt="handle继承图" />
+这是netty中的类图，DotNetty中去掉了ChannelInboundHandlerAdapter和ChannelOutboundHandlerAdapter，所有的Handler继承自-&gt;<strong>ChannelHandlerAdapter</strong>-&gt;<strong>IChannelHandler</strong></p>
 :ET

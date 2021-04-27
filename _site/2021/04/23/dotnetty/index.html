@@ -19,7 +19,7 @@
     <link rel="shortcut icon" href="/img/favicon.ico">
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://operhero.github.io/2021/04/23/dotnetty/">
+    <link rel="canonical" href="http://0.0.0.0:4000/2021/04/23/dotnetty/">
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -35,6 +35,10 @@
     <!-- Hux change font-awesome CDN to qiniu -->
     <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
+        <link href='/stylesheets/github.css' rel='stylesheet' type='text/css'/>
+
+    <link href="/stylesheets/prism.css" rel="stylesheet" />
+    <script src="/stylesheets/prism.js"></script>
 
     <!-- Hux Delete, sad but pending in China
     <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
@@ -211,8 +215,8 @@
 
 				<h1 id="下载demo">下载demo</h1>
 <p>克隆github项目</p>
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone git@github.com:Azure/DotNetty.git
-</code></pre></div></div>
+<pre><code class="language-Git">git clone git@github.com:Azure/DotNetty.git
+</code></pre>
 
 <p>阅读examples/Discard.Server工程,启动代码如下：</p>
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">bossGroup</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">MultithreadEventLoopGroup</span><span class="p">(</span><span class="m">1</span><span class="p">);</span>
@@ -743,7 +747,7 @@ SingleThreadEventLoop继承自SingleThreadEventExecutor，调用父类的构造�
     /* * * CONFIGURATION VARIABLES * * */
     var disqus_shortname = "operhero-github-io";
     var disqus_identifier = "/2021/04/23/dotnetty";
-    var disqus_url = "https://operhero.github.io/2021/04/23/dotnetty/";
+    var disqus_url = "http://0.0.0.0:4000/2021/04/23/dotnetty/";
 
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
