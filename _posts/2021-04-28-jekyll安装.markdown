@@ -1,0 +1,103 @@
+---
+layout:     post
+title:      "jekyll"
+subtitle:   "" 
+date:   2021-04-28
+tags:
+    - linux
+---
+
+内网centos7的机器上想部署jekyll，通过export https_proxy=外网机ip:代理端口 来外网通信。
+
+1. 安装相应的依赖包及所需要的工具
+```shell
+yum install -y nodejs npm ruby ruby-devel rubygems git gcc gcc-c++ make openssl-devel wget
+```
+
+2. 修改gem源
+```shell
+gem source -l
+gem sources --remove https://rubygems.org/
+gem sources -a https://gems.ruby-china.com/
+gem source -l
+*** CURRENT SOURCES ***
+ 
+https://ruby.taobao.org/
+gem sources -u 
+```
+
+gem sources -a https://gems.ruby-china.com/这一步总是失败，使用了另外一种修改方法：
+```shell
+vi ~/.gemrc
+
+:backtrace: false
+:bulk_threshold: 1000
+:sources:
+- https://gems.ruby-china.com/
+:update_sources: true
+:verbose: true
+```
+
+3. 提升ruby版本
+默认安装的ruby版本为ruby 2.0.0p648 (2015-12-16) [x86_64-linux]。jekyll需要高版本。
+3.1 安装基本工具
+```shell
+yum -y install ruby ruby-devel rubygems rpm-build
+```
+3.2 安装yum源
+```shell
+yum install -y centos-release-scl-rh
+```
+3.3 安装指定版本的ruby
+```shell
+yum install -y rh-ruby27
+```
+3.4 使升级后的配置生效
+```shell
+scl enable rh-ruby27 bash
+```
+
+3.5 提升工具版本
+```shell
+yum install rh-ruby27-ruby-devel
+```
+
+或者
+```shell
+yum remove ruby ruby-devel -y
+wget http://cache.ruby-lang.org/pub/ruby/2.7/ruby-2.7.1.tar.gz
+tar zxvf ruby-2.7.1.tar.gz
+cd ruby-2.7.1
+./configure --prefix=/usr/local/ruby --with-opessl-dir=/root/soft/openssl-1.0.0l
+make && make install
+echo "export PATH=/usr/local/ruby/bin:$PATH >> /root/.bash_profile"
+source /root/.bash_profile
+ruby --version
+```
+
+
+4. 安装jekyll依赖项及jekyll
+```shell
+gem install json_pure
+gem install rouge
+gem install bundler
+gem install rake
+gem install minima
+gem install jekyll
+```
+
+5. 安装nodejs
+```shell
+wget http://nodejs.org/dist/v0.10.26/node-v0.10.26.tar.gz
+tar -zvxf node-v0.10.26.tar.gz
+cd node-v0.10.26
+make && make install
+node -v
+```
+
+6. 测试jekyll
+```shell
+jekyll new test
+cd test
+jekyll server
+```
