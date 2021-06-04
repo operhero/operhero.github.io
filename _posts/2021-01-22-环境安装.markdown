@@ -69,3 +69,14 @@ systemctl enable mariadb  # 设置为开机自启动服务
 
 mysql_secure_installation
 
+或安装mysql 5.7.20
+```
+wget http://repo.mysql.com/mysql57-community-release-el7-8.noarch.rpm
+sudo rpm -ivh mysql57-community-release-el7-8.noarch.rpm
+sudo yum -y install mysql-server
+sudo service mysqld restart
+sudo grep "password" /var/log/mysqld.log
+mysql -uroot -p
+alter user 'root'@'localhost' identified by 'P@ssw0rd';
+```
+
