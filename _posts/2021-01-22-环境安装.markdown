@@ -55,6 +55,10 @@ vi /etc/profile 最后一行添加
 
 source /etc/profile 
 
+或创建软连接
+
+ln -s /usr/local/redis/bin/redis-cli /usr/bin/redis-cli
+
 3、安装jdk
 
 yum install java-1.8.0-openjdk
