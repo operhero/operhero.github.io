@@ -78,3 +78,47 @@ class TestDefault<T>
     }
 }
 ```
+
+### C#中的多线程
+使用线程池而不是创建线程。如使用ThreadPool.QueueUserWorkItem<br />
+当需要检查完成情况、跟踪进度、暂停或取消任务时，使用BackgroundWorker
+
+优先使用lock().需要在不同上下文中释放锁，或者需要给锁加个超时时间时，使用Monitor.Enter(lockTarget)/Monitor.TryEnter(lockTarget, 1000ms)和Monitor.Exit(lockTarget)<br />
+未规避死锁问题，规定lock(this)或lock(someclass)都不如为类创建一个同步对象
+```csharp
+private object syncHandle = new object();
+
+public void IncrementTotal()
+{
+    lock(syncHandle)
+    {
+        //代码省略
+    }
+}
+```
+
+如果程序不需要经常锁定，一种减少同步对象创建的写法：
+```csharp
+private object syncHandle;
+
+private object GetSyncHandle()
+{
+    // CompareExchange首先比较syncHandle和null,若为null则创建一个新对象并指派给syncHandle
+    System.Threading.Interlocked.CompareExchange(ref syncHandle, new object(), null);
+    return syncHandle
+}
+
+public void IncrementTotal()
+{
+    lock(GetSyncHandle())
+    {
+        //代码省略
+    }
+}
+```
+
+System.Threading.Interlocked.Increment(ref v);原子自增<br />
+System.Threading.Interlocked.Decrement(ref v);原子自减<br />
+System.Threading.Interlocked.Exchange(ref T location, T value);原子替换并返回原始值<br />
+System.Threading.Interlocked.CompareExchange(ref T location, T value, T comparand);原子比较，若相等则赋新值；不关相等与否都返回原始值<br />
+ReaderWriteLockSlim(ReaderWriterLock的改进版);读写锁
