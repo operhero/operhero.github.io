@@ -86,7 +86,7 @@ m_mod.GetStr((int)TABLE.gm_cmd, 1, (int)gm_cmd.str_cmd);
 ```
 
 查询过程图解：
-![cache](/img/game-server/cache.bmp)
+![cache](/images/game-server/cache.bmp)
 
 gm_cmd表在Cache中的下标由TABLE枚举定义
 

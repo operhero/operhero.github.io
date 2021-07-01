@@ -47,6 +47,13 @@ public static ExampleFunc
         Console.Writeline(t.GetType());
     }
 }
+
+// 无参数泛型方法使用
+static T SomeMethod<T>() where T:new()
+{
+  Console.WriteLine("Typeof T: "+typeof(T));
+  return new T();
+}
 ```
 
 使用泛型方法比泛型类更简单，不用显示的指明类型参数。有两种情况必须使用泛型类：
@@ -122,3 +129,30 @@ System.Threading.Interlocked.Decrement(ref v);原子自减<br />
 System.Threading.Interlocked.Exchange(ref T location, T value);原子替换并返回原始值<br />
 System.Threading.Interlocked.CompareExchange(ref T location, T value, T comparand);原子比较，若相等则赋新值；不关相等与否都返回原始值<br />
 ReaderWriteLockSlim(ReaderWriterLock的改进版);读写锁
+
+
+### 28:使用扩展方法增强现有接口
+当许多类需要同时实现一个接口时，那么可以考虑在接口中仅定义最小的成员，然后以扩展方法的形式提供其他的方法。
+```csharp
+public interface MyInterface
+{
+    void MustDo();
+}
+
+public class DoClass : MyInterface
+{
+    public void MustDo()
+    {
+    }
+}
+
+public static class InterfaceExtentions
+{
+    public static void AroundMustDo(this MyInterface @interface)
+    {
+        Console.WriteLine("before must do");
+        @interface.MustDo();
+        Console.WriteLine("after must do");
+    }
+}
+```
