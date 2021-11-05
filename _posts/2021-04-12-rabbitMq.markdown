@@ -21,6 +21,50 @@ tags:
 - 执行 rabbitmqlctl status检查RabbitMQ状态
 
 - 安装管理平台插件 执行 rabbitmq-plugins enable rabbitmq_management即可成功安装，使用默认账号密码（guest/guest）登录[http://localhost:15672/](http://localhost:15672/)即可。
+# Centos7环境安装与操作
+[RabbitMq对应Erlang版本官方说明](https://www.rabbitmq.com/which-erlang.html)
+
+[官方安装指南](https://www.rabbitmq.com/install-rpm.html#package-dependencies)
+
+也可以直接下载rpm进行安装
+
+```
+rpm -ivh erlang-19.3.1-1.el7.centos.x86_64.rpm 
+rpm -ivh socat-1.7.3.2-2.el7.x86_64.rpm 
+rpm -ivh rabbitmq-server-3.6.10-1.el7.noarch.rpm 
+```
+
+启动:
+
+```
+chkconfig rabbitmq-server on
+
+/sbin/service rabbitmq-server start
+/sbin/service rabbitmq-server status
+/sbin/service rabbitmq-server stop
+```
+
+还有另外的重启命令：
+```
+rabbitmqctl stop
+rabbitmq-server -detached
+```
+
+添加插件:
+```
+rabbitmq-plugins enable rabbitmq_management
+```
+
+用户操作：
+```
+rabbitmqctl list_users
+rabbitmqctl add_user username userpassword
+rabbitmqctl change_password username 'newpassword'
+rabbitmqctl set_permissions -p "/" username ".*" ".*" ".*"
+rabbitmqctl set_user_tags administrator
+```
+
+set_user_tags是设置用户角色，set_permissions是设置用户权限。[具体可了解](https://blog.csdn.net/aqCat/article/details/105652848)
 
 # 专有名词说明
 
