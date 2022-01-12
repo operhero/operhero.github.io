@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "jekyll"
+title:      "Jekyll"
 subtitle:   "" 
 date:   2021-04-28
 tags:
