@@ -187,3 +187,13 @@ hello web-0
 
 ### Mysql集群实战
 [k8s-mysql-cluster](https://github.com/xiaochaoren/k8s-mysql-cluster.git)
+
+```
+kubectl label nodes master mysql=master
+kubectl label nodes slave mysql=slave
+mkdir -p /mnt/mysql
+kubectl create namespace data
+
+systemctl status kubelet -l #查看报错日志
+journalctl -xe #查看报错日志
+```
