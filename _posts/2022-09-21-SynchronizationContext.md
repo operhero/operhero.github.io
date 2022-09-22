@@ -311,7 +311,7 @@ ConfigureAwait 提供了一种途径避免 SynchronizationContext 捕获
 而TaskScheduler.Current默认使用线程池来执行异步回调
 
 
-###参考
+### 参考
 [实现自己的异步方法](https://www.jianshu.com/p/d109af185469)  
 [C#中的ExecutionContext 和 SynchronizationContext](https://zhuanlan.zhihu.com/p/378386442)  
 [SynchronizationContext(同步上下文)综述](https://www.cnblogs.com/BigBrotherStone/p/12240731.html)
