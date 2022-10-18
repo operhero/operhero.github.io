@@ -154,7 +154,7 @@ SynchronizationContext.SetSynchronizationContext(this.threadSynchronizationConte
 ```
 这样所有await async执行完异步方法后，通过传递的上下文threadSynchronizationContext，向队列中传入回调，由主线程执行
 
-###关于上下文在异步方法中的传递
+### 关于上下文在异步方法中的传递
 异步调用遇到await关键字时，自动将当前线程的上下文传递给异步方法。但你可以使用ConfigureAwait来改变这一行为
 ```c#
 using System;
@@ -307,7 +307,7 @@ else
 }
 ```
 函数会先获取SynchronizationContext.Current对象，这个对象默认情况下，在控制台程序中为null，在GUI程序中不为null  
-ConfigureAwait 提供了一种途径避免 SynchronizationContext 捕获
+ConfigureAwait 提供了一种途径避免 SynchronizationContext 捕获  
 而TaskScheduler.Current默认使用线程池来执行异步回调
 
 
